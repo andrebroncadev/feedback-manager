@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="preview-body">
+  <article class="slide" id="slide">
+    <div class="slide-topline"></div>
+
+    <header class="slide-header">
+      <div class="brand-mark">
+        <span class="brand-dot"></span>
+        <span>FEEDBACK</span>
+      </div>
+      <span class="period" id="period">SEMANA</span>
+    </header>
+
+    <section class="hero">
+      <div>
+        <p class="kicker" id="property">FEEDBACK DE EXPOSIÇÃO</p>
+        <h1 id="owner">Maria Eliza e Rubens</h1>
+      </div>
+      <div class="hero-rule"></div>
+    </section>
+
+    <section class="content-grid">
+      <div class="left-column">
+        <p class="label">EXPOSIÇÃO TRABALHADA</p>
+        <div id="channels" class="chips"></div>
+
+        <div class="story-card">
+          <span class="card-number">01</span>
+          <div>
+            <h2>Leitura da semana</h2>
+            <p id="summary"></p>
+          </div>
+        </div>
+      </div>
+
+      <aside class="action-card">
+        <span class="card-number">02</span>
+        <p class="label">PRÓXIMO PASSO</p>
+        <h2>Ação planejada</h2>
+        <p id="action"></p>
+        <div class="action-line"></div>
+        <small>ACOMPANHAMENTO DE DIVULGAÇÃO</small>
+      </aside>
+    </section>
+
+    <footer class="slide-footer">
+      <span>ACOMPANHAMENTO IMOBILIÁRIO</span>
+      <span>FEEDBACK MANAGER</span>
+    </footer>
+  </article>
+
+  <script>
+    window.renderFeedback = function(data = {}) {
+      document.querySelector("#owner").textContent = data.owner || "Proprietário";
+      document.querySelector("#property").textContent = data.property || "FEEDBACK DE EXPOSIÇÃO";
+      document.querySelector("#period").textContent = data.period || "SEMANA";
+      document.querySelector("#summary").textContent = data.summary || "Sem observações registradas.";
+      document.querySelector("#action").textContent = data.action || "Nenhuma ação registrada.";
+
+      const channels = document.querySelector("#channels");
+      channels.innerHTML = "";
+      (data.channels || []).forEach((channel) => {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.textContent = channel;
+        channels.appendChild(chip);
+      });
+    };
+
+    window.renderFeedback({});
+  </script>
+</body>
+</html>
