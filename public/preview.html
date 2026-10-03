@@ -86,7 +86,7 @@
 window.renderFeedback = function(data = {}) {
   const set = (id, value, fallback = "—") => document.querySelector(id).textContent = value || fallback;
   set("#coverOwner", data.owner, "Proprietário");
-  set("#coverProperty", data.address || data.property || "Imóvel");
+  set("#coverProperty", data.address || "Imóvel");
   set("#addressLabel", data.address, "Endereço cadastrado");
   set("#dateLabel", data.date ? new Date(data.date + "T12:00:00").toLocaleDateString("pt-BR") : "—");
   set("#salutation", data.owner ? "Prezado(a) " + data.owner : "Prezado(a) proprietário(a)");
