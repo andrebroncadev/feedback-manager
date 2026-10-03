@@ -1,4 +1,4 @@
-@page { size: 16in 9in; margin: 0; }
+@page { size: 1600px 900px; margin: 0; }
 :root{
   --blue:#003366; --blue2:#0056B3; --red:#E60000; --green:#28A745;
   --ink:#333; --muted:#6b7280; --light:#F8F9FA; --line:#dfe3e8; --white:#fff;
@@ -36,9 +36,9 @@ textarea{resize:vertical;line-height:1.45}
 .preview-frame{background:#cdd3d9;padding:clamp(10px,2vw,26px);display:flex;justify-content:center}
 .preview-frame iframe{display:block;width:min(100%,1100px);aspect-ratio:16/9;border:0;box-shadow:0 20px 55px rgba(0,0,0,.15)}
 
-.preview-body{background:#cdd3d9;overflow:hidden}
-#report{width:1600px}
-.slide{width:1600px;height:900px;position:relative;overflow:hidden;background:#fff;padding:65px 82px;page-break-after:always;break-after:page}
+.preview-body{background:#cdd3d9;overflow:hidden;width:1600px;min-width:1600px}
+#report{width:1600px;margin:0;padding:0}
+.slide{width:1600px;height:900px;min-width:1600px;min-height:900px;position:relative;overflow:hidden;background:#fff;padding:65px 82px;box-sizing:border-box;page-break-after:always;break-after:page;break-inside:avoid;page-break-inside:avoid}
 .slide:last-child{page-break-after:auto}
 .cover-slide{color:#fff;background:#f8f9fa;padding:0}
 .cover-blue{position:absolute;inset:0 0 0 0;background:linear-gradient(120deg,var(--blue),#0068bd)}
@@ -70,4 +70,7 @@ textarea{resize:vertical;line-height:1.45}
 
 @media(max-width:1000px){.app-shell{padding:16px}.app-header{align-items:stretch;flex-direction:column}.workspace{grid-template-columns:1fr}.preview-panel{order:-1}}
 @media(max-width:560px){.metrics-grid{grid-template-columns:1fr}.form-panel{padding:16px}}
-@media print{.preview-body{background:#fff}body{margin:0}.slide{page-break-after:always}}
+@media print{html,body{width:1600px;height:900px;margin:0;padding:0}.preview-body{background:#fff;overflow:hidden}.slide{width:1600px;height:900px;min-width:1600px;min-height:900px;page-break-after:always;break-after:page;break-inside:avoid;page-break-inside:avoid}.slide:last-child{page-break-after:auto;break-after:auto}}
+
+/* O preview do editor é reduzido apenas visualmente; o PDF continua em 1600×900. */
+.preview-frame iframe{overflow:hidden}
