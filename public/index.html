@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Feedback Manager</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="app-body">
+  <main class="app-shell">
+    <header class="app-header">
+      <div>
+        <span class="eyebrow">FEEDBACK MANAGER</span>
+        <h1>Gerar feedback</h1>
+        <p>Preencha os dados e veja a peça antes de gerar o PDF.</p>
+      </div>
+      <button id="pdfButton" class="primary-button">Salvar PDF</button>
+    </header>
+
+    <section class="workspace">
+      <form id="feedbackForm" class="form-panel">
+        <div class="section-heading">
+          <span>01</span>
+          <div>
+            <h2>Identificação</h2>
+            <p>Informações que aparecem no cabeçalho.</p>
+          </div>
+        </div>
+
+        <label>Proprietário
+          <input name="owner" value="Maria Eliza e Rubens" placeholder="Ex.: Maria Eliza e Rubens">
+        </label>
+
+        <div class="two-columns">
+          <label>Imóvel
+            <input name="property" value="Feedback de exposição" placeholder="Ex.: Casa Juquehy">
+          </label>
+          <label>Período
+            <input name="period" value="Semana" placeholder="Ex.: 29/09 — 05/10">
+          </label>
+        </div>
+
+        <div class="section-heading compact">
+          <span>02</span>
+          <div>
+            <h2>Canais</h2>
+            <p>Escolha o que foi trabalhado na semana.</p>
+          </div>
+        </div>
+
+        <div class="channel-grid">
+          <label class="check-card"><input type="checkbox" name="channels" value="Sites" checked><span>Sites</span></label>
+          <label class="check-card"><input type="checkbox" name="channels" value="Redes sociais" checked><span>Redes sociais</span></label>
+          <label class="check-card"><input type="checkbox" name="channels" value="Grupo interno de especialistas" checked><span>Grupo interno</span></label>
+          <label class="check-card"><input type="checkbox" name="channels" value="Show de captações" checked><span>Show de captações</span></label>
+        </div>
+
+        <div class="section-heading compact">
+          <span>03</span>
+          <div>
+            <h2>Leitura da semana</h2>
+            <p>O texto vira a área principal do slide.</p>
+          </div>
+        </div>
+
+        <label>O que aconteceu
+          <textarea name="summary" rows="3">O imóvel continua recebendo exposição nos canais trabalhados. A leitura da semana será usada para orientar os próximos ajustes de divulgação e posicionamento.</textarea>
+        </label>
+
+        <label>Próxima ação
+          <textarea name="action" rows="3">Manter a exposição ativa e acompanhar a resposta dos anúncios. Se necessário, revisar a apresentação do imóvel e reforçar a divulgação com ações direcionadas.</textarea>
+        </label>
+      </form>
+
+      <section class="preview-panel">
+        <div class="preview-toolbar">
+          <span>PRÉVIA</span>
+          <span>16:9 · PDF</span>
+        </div>
+        <div class="preview-frame">
+          <iframe title="Prévia do feedback" src="/preview"></iframe>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
