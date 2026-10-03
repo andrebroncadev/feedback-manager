@@ -5,7 +5,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json({ limit: "20mb" }));
-app.use(express.static("public"));
+app.use(express.static("public"));\napp.use("/data", express.static("data"));
 
 app.post("/api/pdf", async (req, res) => {
   const data = req.body;
@@ -15,7 +15,7 @@ app.post("/api/pdf", async (req, res) => {
   try {
     browser = await puppeteer.launch({ headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] });
     const page = await browser.newPage();
-    await page.setViewport({ width: 1600, height: 900, deviceScaleFactor: 1 });
+    await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 1 });
     const origin = `${req.protocol}://${req.get("host")}`;
     await page.goto(`${origin}/preview`, { waitUntil: "networkidle0" });
     await page.evaluate((payload) => window.renderFeedback(payload), data);
