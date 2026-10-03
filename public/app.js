@@ -5,16 +5,8 @@ const ownerSelect = document.querySelector("#ownerSelect");
 const addressInput = document.querySelector("#address");
 const dateInput = document.querySelector("#date");
 
-const owners = [
-  { name: "Carmita", address: "" },
-  { name: "Marcelo", address: "" },
-  { name: "Luíz", address: "" },
-  { name: "Maria Eliza e Rubens", address: "" },
-  { name: "Milena", address: "" },
-  { name: "Augusto", address: "" }
-];
-
-const actionOptions = [
+let properties = [];
+let actionOptions = [
   "Panfletagem estratégica / impressão e distribuição",
   "Tráfego pago / anúncios segmentados",
   "Redes sociais e portais imobiliários",
@@ -36,28 +28,37 @@ function today() {
   return local.toISOString().slice(0, 10);
 }
 
-function loadOwners() {
-  const saved = JSON.parse(localStorage.getItem("feedbackOwners") || "null");
-  const list = Array.isArray(saved) ? saved : owners;
-  ownerSelect.innerHTML = list.map((owner) =>
-    `<option value="${escapeHtml(owner.name)}" data-address="${escapeHtml(owner.address || "")}">${escapeHtml(owner.name)}</option>`
-  ).join("");
-  updateAddress();
-}
-
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (char) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
   }[char]));
 }
 
-function updateAddress() {
-  addressInput.value = ownerSelect.selectedOptions[0]?.dataset.address || "";
+async function loadProperties() {
+  const response = await fetch("/data/properties.json", { cache: "no-store" });
+  if (!response.ok) throw new Error("Não foi possível carregar os imóveis.");
+  properties = await response.json();
+
+  ownerSelect.innerHTML = properties.map((property) =>
+    `<option value="${escapeHtml(property.id)}">${escapeHtml(property.owner)}</option>`
+  ).join("");
+
+  updateProperty();
+}
+
+function updateProperty() {
+  const property = properties.find((item) => item.id === ownerSelect.value);
+  addressInput.value = property?.address || "";
+  document.querySelector("#coverImage").dataset.url = property?.photoUrl || "";
+  updatePreview();
 }
 
 function renderActions() {
+  const saved = JSON.parse(localStorage.getItem("feedbackActions") || "null");
+  if (Array.isArray(saved)) actionOptions = [...new Set([...actionOptions, ...saved])];
+
   const selected = JSON.parse(localStorage.getItem("feedbackSelectedActions") || "null") || actionOptions.slice(0, 4);
-  document.querySelector("#actions").innerHTML = actionOptions.map((action, i) => `
+  document.querySelector("#actions").innerHTML = actionOptions.map((action) => `
     <label class="action-check">
       <input type="checkbox" name="actions" value="${escapeHtml(action)}" ${selected.includes(action) ? "checked" : ""}>
       <span>${escapeHtml(action)}</span>
@@ -67,9 +68,14 @@ function renderActions() {
 
 function getData() {
   const data = Object.fromEntries(new FormData(form).entries());
+  const property = properties.find((item) => item.id === ownerSelect.value);
+  data.owner = property?.owner || "";
+  data.address = property?.address || "";
+  data.photoUrl = property?.photoUrl || "";
   data.actions = [...form.querySelectorAll('input[name="actions"]:checked')].map((input) => input.value);
-  data.coverImage = document.querySelector("#coverImage").dataset.data || "";
+  data.coverImage = document.querySelector("#coverImage").dataset.data || data.photoUrl || "";
   data.statsImage = document.querySelector("#statsImage").dataset.data || "";
+  localStorage.setItem("feedbackSelectedActions", JSON.stringify(data.actions));
   return data;
 }
 
@@ -94,7 +100,7 @@ async function readImage(input) {
   updatePreview();
 }
 
-ownerSelect.addEventListener("change", updateAddress);
+ownerSelect.addEventListener("change", updateProperty);
 form.addEventListener("input", updatePreview);
 form.addEventListener("change", updatePreview);
 frame.addEventListener("load", updatePreview);
@@ -106,7 +112,10 @@ document.querySelector("#customAction").addEventListener("keydown", (event) => {
   event.preventDefault();
   const value = event.currentTarget.value.trim();
   if (!value) return;
-  if (!actionOptions.includes(value)) actionOptions.push(value);
+  if (!actionOptions.includes(value)) {
+    actionOptions.push(value);
+    localStorage.setItem("feedbackActions", JSON.stringify(actionOptions));
+  }
   event.currentTarget.value = "";
   renderActions();
   updatePreview();
@@ -126,10 +135,11 @@ pdfButton.addEventListener("click", async () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `feedback-${getData().owner || "imovel"}.pdf`;
+    link.download = `feedback-${(getData().owner || "imovel").replace(/[^a-z0-9À-ÿ_-]+/gi, "-")}.pdf`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-  } catch {
+  } catch (error) {
+    console.error(error);
     alert("Não foi possível gerar o PDF. Tente novamente.");
   } finally {
     pdfButton.disabled = false;
@@ -138,5 +148,8 @@ pdfButton.addEventListener("click", async () => {
 });
 
 dateInput.value = today();
-loadOwners();
+loadProperties().catch((error) => {
+  console.error(error);
+  ownerSelect.innerHTML = '<option value="">Erro ao carregar proprietários</option>';
+});
 renderActions();
