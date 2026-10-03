@@ -1,94 +1,72 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Feedback Manager</title>
-  <link rel="stylesheet" href="/styles.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Relatório de Atividades — RE/MAX</title><link rel="stylesheet" href="/styles.css">
 </head>
-<body class="app-body">
-  <main class="app-shell">
-    <header class="app-header">
-      <div>
-        <span class="eyebrow">FEEDBACK MANAGER · RELATÓRIO SEMANAL</span>
-        <h1>Montar relatório</h1>
-        <p>Escolha o proprietário, preencha os indicadores e monte o PDF no formato de apresentação.</p>
-      </div>
-      <button id="pdfButton" class="primary-button">Salvar PDF</button>
-    </header>
+<body class="manager">
+<main class="manager-shell">
+<header class="topbar">
+  <div><div class="eyebrow">RE/MAX SOUL</div><h1>Relatório de Atividades</h1><p>Preencha os dados. O sistema organiza tudo no modelo oficial.</p></div>
+  <div class="status" id="saveStatus">Pronto</div>
+</header>
 
-    <section class="workspace">
-      <form id="feedbackForm" class="form-panel">
-        <div class="section-heading"><span>01</span><div><h2>Imóvel</h2><p>Dados já cadastrados no sistema.</p></div></div>
+<form id="feedbackForm" class="form-grid">
+<section class="panel panel-wide">
+  <div class="panel-head"><div><span class="step">01</span><h2>Identificação</h2></div><span class="hint">Dados que aparecem no relatório</span></div>
+  <div class="fields">
+    <label>Proprietário / destinatário<select id="ownerSelect" required></select></label>
+    <label>Endereço do imóvel<input id="address" required placeholder="Endereço completo"></label>
+    <label>Data<input id="date" type="date" required></label>
+    <label>Nome do corretor<input id="brokerName" value="Erica Bronca"></label>
+    <label>Telefone<input id="brokerPhone" value="(12) 98123-5534"></label>
+    <label>E-mail<input id="brokerEmail" value="ericabronca@remax.com.br"></label>
+    <label>CRECI<input id="creci" value="CRECI 199167"></label>
+    <label class="span-2">Endereço do escritório<input id="office" value="324 Rua Claudio Izidoro do Espírito Santo, Juquehy — São Sebastião"></label>
+  </div>
+</section>
 
-        <label>Proprietário
-          <select name="owner" id="ownerSelect"></select>
-        </label>
+<section class="panel">
+  <div class="panel-head"><div><span class="step">02</span><h2>Indicadores</h2></div><span class="hint">Números da semana</span></div>
+  <div class="fields three">
+    <label>Visualizações online<input id="views" type="number" min="0"></label>
+    <label>Acessos no anúncio<input id="accesses" type="number" min="0"></label>
+    <label>Visitas virtuais<input id="virtualVisits" type="number" min="0"></label>
+    <label>Exposição<input id="exposure" type="number" min="0"></label>
+    <label>% exposição<input id="exposurePct" placeholder="19,37%"></label>
+    <label>% visualizações<input id="viewsPct" placeholder="40%"></label>
+  </div>
+</section>
 
-        <label>Endereço
-          <input name="address" id="address" readonly>
-        </label>
+<section class="panel">
+  <div class="panel-head"><div><span class="step">03</span><h2>Textos</h2></div><span class="hint">Você controla o conteúdo</span></div>
+  <div class="fields">
+    <label class="span-2">Texto da página 2<textarea id="message1" rows="5" placeholder="Texto que aparece após “Prezados...”"></textarea></label>
+    <label class="span-2">Texto complementar da página 3<textarea id="message2" rows="5" placeholder="Contexto e análise da semana..."></textarea></label>
+    <label class="span-2">Texto adicional da página 3<textarea id="message3" rows="5" placeholder="Outra análise ou explicação..."></textarea></label>
+  </div>
+</section>
 
-        <label>Data do relatório
-          <input name="date" id="date" type="date">
-        </label>
+<section class="panel">
+  <div class="panel-head"><div><span class="step">04</span><h2>Ações de marketing</h2></div><span class="hint">Marque o que foi feito e o que vem a seguir</span></div>
+  <div id="actions" class="actions-editor"></div>
+  <div class="add-action"><input id="customAction" placeholder="Adicionar uma ação..."><button type="button" id="addAction">Adicionar</button></div>
+</section>
 
-        <div class="section-heading compact"><span>02</span><div><h2>Indicadores</h2><p>Os números são inseridos manualmente.</p></div></div>
+<section class="panel">
+  <div class="panel-head"><div><span class="step">05</span><h2>Imagens</h2></div><span class="hint">Arraste ou selecione</span></div>
+  <div class="upload-grid">
+    <label class="upload">Foto do imóvel<input id="propertyPhoto" type="file" accept="image/*"><span id="propertyName">Nenhuma foto</span></label>
+    <label class="upload">Foto do corretor<input id="brokerPhoto" type="file" accept="image/*"><span id="brokerPhotoName">Nenhuma foto</span></label>
+    <label class="upload span-2">Imagem das estatísticas<input id="statsPhoto" type="file" accept="image/*"><span id="statsName">Nenhuma imagem</span></label>
+  </div>
+</section>
 
-        <div class="metrics-grid">
-          <label>Visualizações / exposição
-            <input name="views" type="number" min="0" placeholder="Ex.: 376">
-          </label>
-          <label>Acessos / interações
-            <input name="accesses" type="number" min="0" placeholder="Ex.: 7">
-          </label>
-          <label>Variação %
-            <input name="variation" type="text" placeholder="Ex.: +19,37%">
-          </label>
-          <label>Portal / origem
-            <input name="portal" type="text" placeholder="Ex.: RE/MAX">
-          </label>
-        </div>
-
-        <div class="section-heading compact"><span>03</span><div><h2>Conteúdo</h2><p>Você pode gerar o texto comigo e colar aqui.</p></div></div>
-
-        <label>Introdução
-          <textarea name="intro" rows="4" placeholder="Texto curto de abertura..."></textarea>
-        </label>
-
-        <label>Análise da semana
-          <textarea name="analysis" rows="6" placeholder="Parecer técnico da semana..."></textarea>
-        </label>
-
-        <label>Contexto / observações
-          <textarea name="notes" rows="3" placeholder="Feedbacks, procura, visitas, acontecimentos..."></textarea>
-        </label>
-
-        <div class="section-heading compact"><span>04</span><div><h2>Ações</h2><p>Selecione da lista. Novas ações podem ser adicionadas depois.</p></div></div>
-
-        <div id="actions" class="action-list"></div>
-
-        <label class="custom-action">Adicionar outra ação
-          <input id="customAction" type="text" placeholder="Digite uma ação e pressione Enter">
-        </label>
-
-        <div class="section-heading compact"><span>05</span><div><h2>Evidências</h2><p>Por enquanto, você seleciona as imagens manualmente.</p></div></div>
-
-        <label>Foto principal do imóvel
-          <input id="coverImage" type="file" accept="image/*">
-        </label>
-
-        <label>Screenshot / estatística do portal
-          <input id="statsImage" type="file" accept="image/*">
-        </label>
-      </form>
-
-      <section class="preview-panel">
-        <div class="preview-toolbar"><span>PRÉVIA</span><span>3 PÁGINAS · 16:9 · PDF</span></div>
-        <div class="preview-frame"><iframe title="Prévia do relatório" src="/preview"></iframe></div>
-      </section>
-    </section>
-  </main>
-  <script src="/app.js"></script>
-</body>
-</html>
+<section class="actions-bar">
+  <button type="button" class="secondary" id="previewButton">Visualizar relatório</button>
+  <button type="submit" class="primary" id="pdfButton">Gerar PDF</button>
+</section>
+</form>
+</main>
+<script src="/app.js"></script>
+</body></html>
