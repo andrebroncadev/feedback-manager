@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Feedback Manager</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar"><div><strong>Feedback Manager</strong><span>RE/MAX • Feedback semanal</span></div></header>
+<main class="app">
+<section class="panel controls">
+<h1>Novo feedback</h1>
+<label>Proprietário<select id="owner"></select></label>
+<div class="grid2"><label>Visualizações / XX<input id="xx" type="number" min="0" inputmode="numeric"></label><label>Acessos / YY<input id="yy" type="number" min="0" inputmode="numeric"></label></div>
+<label>Data<input id="date" type="date"></label>
+<label>Print da estatística<input id="image" type="file" accept="image/*"></label>
+<div class="thumb"><img id="preview" alt="Prévia da estatística"></div>
+<label>Texto inicial<textarea id="intro" placeholder="Situação do imóvel e contexto da semana, sem despejar os números."></textarea></label>
+<label>Análise dos números<textarea id="analysis" placeholder="Explique o comportamento das pesquisas e acessos."></textarea></label>
+<label>A fazer<textarea id="todo" placeholder="Preencha somente quando houver uma ação definida."></textarea></label>
+<h2>Ações de marketing</h2><div id="actions" class="actions"></div>
+<div class="buttons"><button id="generate">Atualizar prévia</button><button id="savePdf">Salvar PDF</button><button id="saveDocx">Salvar DOCX</button><button id="saveProject">Salvar projeto</button></div>
+</section>
+<section class="panel preview-panel"><div id="document" class="document"></div></section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="app.js"></script>
+</body></html>
