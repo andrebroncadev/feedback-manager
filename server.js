@@ -23,8 +23,8 @@ app.post("/api/pdf", async (req, res) => {
     const pdf = await page.pdf({
       printBackground: true,
       landscape: true,
-      width: "1600px",
-      height: "900px",
+      width: "1920px",
+      height: "1080px",
       margin: { top: "0in", right: "0in", bottom: "0in", left: "0in" }
     });
     const safeName = String(data.owner || "feedback").replace(/[^a-z0-9À-ÿ _-]/gi, "").trim().replace(/\s+/g, "-").toLowerCase();
