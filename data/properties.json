@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1",
+    "owner": "Maria Eliza e Rubens",
+    "address": "191, R. Itapiranga, Barra do Una, São Sebastião - SP",
+    "photoUrl": ""
+  },
+  {
+    "id": "2",
+    "owner": "Carmita",
+    "address": "",
+    "photoUrl": ""
+  },
+  {
+    "id": "3",
+    "owner": "Marcelo",
+    "address": "",
+    "photoUrl": ""
+  },
+  {
+    "id": "4",
+    "owner": "Luíz",
+    "address": "",
+    "photoUrl": ""
+  },
+  {
+    "id": "5",
+    "owner": "Milena",
+    "address": "",
+    "photoUrl": ""
+  },
+  {
+    "id": "6",
+    "owner": "Augusto",
+    "address": "",
+    "photoUrl": ""
+  }
+]
