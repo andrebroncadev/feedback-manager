@@ -10,107 +10,68 @@
 <main id="report">
 
 <section class="pagina capa" id="pag1">
-  <div class="capa-main">
-    <h1>Relatório de Atividades do<br>Imóvel</h1>
-    <div class="capa-art">
-      <div class="house"><div class="roof"></div><div class="door"></div><div class="window"></div></div>
-      <div class="tree tree-left"></div><div class="tree tree-right"></div>
-    </div>
+  <div class="capa-title">Relatório de Atividades do<br>Imóvel</div>
+  <div class="capa-art" aria-hidden="true">
+    <div class="capa-house"><div class="capa-roof"></div><div class="capa-body"><div class="capa-door"></div><div class="capa-window"></div></div></div>
+    <div class="capa-tree capa-tree-left"></div><div class="capa-tree capa-tree-right"></div>
+    <div class="clipboard"><div class="clip-top"></div><i></i><i></i><i></i></div>
+    <div class="ground"></div>
   </div>
-  <header class="cabecalho-azul capa-footer">
-    <div class="dados"><b id="p1_nome"></b><span id="p1_tel"></span><span id="p1_email"></span></div>
-    <div class="logo-remax">RE/<i>MAX</i></div>
+  <header class="capa-footer">
+    <div class="capa-contact"><b id="p1_nome"></b><span id="p1_tel"></span><span id="p1_email"></span></div>
+    <div class="capa-logo">RE/<span>MAX</span><sup>®</sup></div>
   </header>
 </section>
 
 <section class="pagina" id="pag2">
-  <header class="cabecalho-azul">
-    <div class="dados"><b id="p2_nome"></b><span id="p2_tel"></span><span id="p2_email"></span></div>
-    <div class="logo-remax">RE/<i>MAX</i></div>
-  </header>
-  <div class="logo-brasil"><strong>RE/<i>MAX</i></strong><span>Brasil</span></div>
-
-  <div class="conteudo pagina2-conteudo">
-    <h2>Relatório de Atividades do Imóvel</h2>
-    <div class="endereco-data"><span id="p2_end"></span><span id="p2_date"></span></div>
-
+  <div class="page2-logo"><div class="logo-mark">◆</div><strong>RE/MAX</strong><span>Brasil</span></div>
+  <div class="pag2-content">
+    <h1>Relatório de Atividades do Imóvel</h1>
+    <div class="address-line"><span id="p2_end"></span><span id="p2_date"></span></div>
     <p class="dest">Prezados <span id="p2_dest"></span>,</p>
-    <p id="p2_msg1"></p>
+    <p class="msg1" id="p2_msg1"></p>
 
-    <div class="bloco-foto">
-      <div class="foto-imovel"><img id="propertyImg"><span id="propertyPlaceholder">Foto do Imóvel</span></div>
-      <div class="caixas">
-        <div class="caixa-num"><span>VISUALIZAÇÕES<br>ONLINE</span><strong id="p2_vis"></strong></div>
-        <div class="caixa-num"><span>ACESSOS NO<br>ANÚNCIO</span><strong id="p2_acessos"></strong></div>
+    <div class="photo-metrics">
+      <div class="property-photo"><img id="propertyImg"><span id="propertyPlaceholder">Foto do Imóvel</span></div>
+      <div class="metric-stack">
+        <div class="metric-card"><span>VISUALIZAÇÕES<br>ONLINE</span><strong id="p2_vis"></strong></div>
+        <div class="metric-card"><span>ACESSOS NO<br>ANÚNCIO</span><strong id="p2_acessos"></strong></div>
       </div>
     </div>
 
-    <div class="resumo">
-      <h3>Resumo de Atividade</h3>
-      <div class="resumo-item"><b id="p2_res_vis"></b><span>Total de vezes em que o anúncio da sua propriedade foi acessado em nosso site.</span></div>
-      <div class="resumo-item"><b id="p2_res_visvirt"></b><span>Quantidade de visitas online, ao vivo e personalizadas feitas para mostrar o imóvel.</span></div>
+    <div class="summary">
+      <h2>Resumo de Atividade</h2>
+      <div class="summary-item"><span class="summary-icon laptop"></span><div><b id="p2_res_vis"></b><small>Total de vezes em que o anúncio da sua propriedade foi acessado em nosso site.</small></div></div>
+      <div class="summary-item"><span class="summary-icon visit"></span><div><b id="p2_res_visvirt"></b><small>Quantidade de visitas online, ao vivo e personalizadas feitas para mostrar o imóvel.</small></div></div>
     </div>
   </div>
 </section>
 
 <section class="pagina" id="pag3">
-  <header class="cabecalho-azul">
-    <div class="dados"><b id="p3_nome"></b><span id="p3_tel"></span><span id="p3_email"></span></div>
-    <div class="logo-remax">RE/<i>MAX</i></div>
-  </header>
-  <div class="logo-brasil"><strong>RE/<i>MAX</i></strong><span>Brasil</span></div>
-
-  <div class="conteudo pagina3-conteudo">
-    <p class="texto-suave" id="p3_msg2"></p>
-
-    <div class="acoes">
-      <h3>Ações de marketing:</h3>
-      <div class="acoes-grid">
-        <div class="acoes-col">
-          <h4>Realizadas</h4>
-          <ul id="doneList"></ul>
-        </div>
-        <div class="acoes-col futuras">
-          <h4>À fazer</h4>
-          <ul id="todoList"></ul>
-        </div>
-      </div>
+  <div class="page3-content">
+    <p class="top-note" id="p3_msg2"></p>
+    <div class="marketing">
+      <h2>Ações de marketing:</h2>
+      <ul id="doneList"></ul>
+      <div class="todo-block" id="todoBlock"><h3>À fazer:</h3><ul id="todoList"></ul></div>
     </div>
-
-    <div class="explicacao" id="p3_msg3"></div>
+    <div class="analysis" id="p3_msg3"></div>
   </div>
 </section>
 
 <section class="pagina" id="pag4">
-  <header class="cabecalho-azul">
-    <div class="dados"><b id="p4_nome"></b><span id="p4_tel"></span><span id="p4_email"></span></div>
-    <div class="logo-remax">RE/<i>MAX</i></div>
-  </header>
-  <div class="logo-brasil"><strong>RE/<i>MAX</i></strong><span>Brasil</span></div>
-
-  <div class="conteudo pagina4-conteudo">
-    <div class="estatisticas">
-      <h3>Estatísticas do anúncio:</h3>
-      <div class="estat-card">
-        <div><b>Exposição</b><strong id="p4_exp"></strong><span>Vezes em que seu anúncio apareceu nas listagens.</span></div>
-        <em id="p4_pct_exp"></em>
+  <div class="stats-title">Estatísticas do anúncio:</div>
+  <div class="stats-frame" id="statsFrame"><img id="statsImg"><span id="statsPlaceholder">Imagem das estatísticas</span></div>
+  <div class="closing">Isso é tudo por agora.</div>
+  <footer class="report-footer">
+    <div class="footer-line"><i></i><i></i><i></i></div>
+    <div class="footer-content">
+      <div class="footer-left">
+        <div class="broker-photo"><img id="brokerImg"></div>
+        <div class="broker-info"><b id="r_nome"></b><span id="r_creci"></span><strong id="r_tel"></strong><strong id="r_email"></strong></div>
       </div>
-      <div class="estat-card">
-        <div><b>Visualizações</b><strong id="p4_vis"></strong><span>Vezes que visitaram seu anúncio.</span></div>
-        <em id="p4_pct_vis"></em>
-      </div>
+      <div class="footer-right"><b>REMAX SOUL</b><span id="r_office"></span></div>
     </div>
-
-    <div class="stats-image" id="statsFrame"><img id="statsImg"><span id="statsPlaceholder">Imagem das estatísticas</span></div>
-    <div class="assinatura">Isso é tudo por agora.</div>
-  </div>
-
-  <footer class="rodape">
-    <div class="rodape-esq">
-      <div class="rodape-foto"><img id="brokerImg"></div>
-      <div><b id="r_nome"></b><span id="r_creci"></span><span id="r_tel"></span><span id="r_email"></span></div>
-    </div>
-    <div class="rodape-dir"><b>REMAX SOUL</b><span id="r_office"></span></div>
   </footer>
 </section>
 
@@ -118,19 +79,19 @@
 <script>
 function fmtDate(v){if(!v)return "";const [y,m,d]=v.split("-");return d+"/"+m+"/"+y}
 function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v||""}
-function list(id,items){document.getElementById(id).innerHTML=(items||[]).map(x=>`<li>${esc(x)}</li>`).join("")}
 function esc(s){return String(s||"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function list(id,items){document.getElementById(id).innerHTML=(items||[]).map(x=>`<li>${esc(x)}</li>`).join("")}
 function image(id,src,placeholder){const img=document.getElementById(id),p=placeholder&&document.getElementById(placeholder);if(src){img.src=src;img.style.display="block";if(p)p.style.display="none"}}
 function fill(d){
-  ["p1_nome","p2_nome","p3_nome","p4_nome","r_nome"].forEach(id=>set(id,d.brokerName));
-  ["p1_tel","p2_tel","p3_tel","p4_tel","r_tel"].forEach(id=>set(id,d.brokerPhone));
-  ["p1_email","p2_email","p3_email","p4_email","r_email"].forEach(id=>set(id,d.brokerEmail));
-  set("r_creci",d.creci);set("r_office",d.office);set("p2_end",d.address);set("p2_date",fmtDate(d.date));set("p2_dest",d.owner);set("p2_msg1",d.message1);set("p3_msg2",d.message2);set("p3_msg3",d.message3);
+  set("p1_nome",d.brokerName);set("p1_tel",d.brokerPhone);set("p1_email",d.brokerEmail);
+  set("p2_end",d.address);set("p2_date",fmtDate(d.date));set("p2_dest",d.owner);set("p2_msg1",d.message1);
   set("p2_vis",d.views);set("p2_acessos",String(d.accesses||0).padStart(2,"0"));
   set("p2_res_vis","Visualizações em Anúncio do Imóvel "+(d.views||0));
   set("p2_res_visvirt","Visitas Virtuais ao Imóvel "+String(d.virtualVisits||0).padStart(2,"0"));
-  set("p4_exp",d.exposure);set("p4_pct_exp",d.exposurePct?"↑ "+d.exposurePct:"");set("p4_vis",d.accesses);set("p4_pct_vis",d.viewsPct?"↑ "+d.viewsPct:"");
+  set("p3_msg2",d.message2);set("p3_msg3",d.message3);
   list("doneList",d.doneActions);list("todoList",d.todoActions);
+  document.getElementById("todoBlock").style.display=(d.todoActions&&d.todoActions.length)?"block":"none";
+  set("r_nome",d.brokerName);set("r_creci",d.creci);set("r_tel",d.brokerPhone);set("r_email",d.brokerEmail);set("r_office",d.office);
   image("propertyImg",d.propertyPhoto||d.photoUrl,"propertyPlaceholder");image("brokerImg",d.brokerPhoto);image("statsImg",d.statsPhoto,"statsPlaceholder");
 }
 window.renderFeedback=fill;
