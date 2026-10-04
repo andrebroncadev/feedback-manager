@@ -11,3 +11,7 @@ body.manager{background:#f3f5f8;min-height:100vh}.navbar{height:64px;position:st
 .profile-actions{display:flex;gap:8px;align-items:center}
 .todo-block h3{color:#386b96 !important}.todo-block li{color:#111 !important}.todo-block li:before{content:"•" !important;color:#111 !important}
 @media(max-width:760px){.profile-actions{width:100%;flex-direction:column}.profile-actions button{width:100%}}
+
+/* Barra de ações da visualização — fora das páginas do PDF. */
+.preview-toolbar{position:fixed;z-index:3000;top:14px;right:14px;display:flex;gap:8px;align-items:center;padding:8px;border-radius:12px;background:rgba(255,255,255,.96);box-shadow:0 10px 30px rgba(15,30,50,.16);border:1px solid #e1e6eb}.whatsapp-button{border:0;border-radius:9px;padding:10px 14px;background:#1f8f4c;color:#fff;font-weight:800;cursor:pointer}.whatsapp-button:hover{filter:brightness(.96)}
+@media(max-width:760px){.preview-toolbar{left:10px;right:10px;top:10px;justify-content:stretch}.preview-toolbar button{flex:1}.preview-body{padding-top:58px}}
