@@ -48,7 +48,7 @@ app.post("/api/pdf", async (req, res) => {
       const imgs = [...document.images].filter(img => img.src);
       await Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(resolve => { img.onload = img.onerror = resolve; })));
     });
-    const pdf = await page.pdf({ width: "612pt", height: "792pt", printBackground: true, margin: { top: "0", right: "0", bottom: "0", left: "0" }, preferCSSPageSize: true });
+    const pdf = await page.pdf({ format: "Letter", printBackground: true, margin: { top: "0", right: "0", bottom: "0", left: "0" }, preferCSSPageSize: false });
     const safe = String(data.owner || "imovel").replace(/[\\/:*?"<>|]/g, "").trim() || "imovel";
     const filename = `FEEDBACK_${safe}.pdf`;
     res.setHeader("Content-Type", "application/pdf");
