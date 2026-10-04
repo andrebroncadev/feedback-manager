@@ -1,6 +1,7 @@
 [
   {
     "id": "1",
+    "brokerId": "erica",
     "owner": "Maria Eliza e Rubens",
     "address": "191, R. Itapiranga, Barra do Una, São Sebastião - SP",
     "remaxCode": "",
@@ -8,6 +9,7 @@
   },
   {
     "id": "2",
+    "brokerId": "erica",
     "owner": "Carmita",
     "address": "Rua Ana, 136, Juquehy, São Sebastião, São Paulo",
     "remaxCode": "11623487",
@@ -15,6 +17,7 @@
   },
   {
     "id": "3",
+    "brokerId": "erica",
     "owner": "Marcelo",
     "address": "Rua Cravinhos, 135, Barra do Una, São Sebastião, São Paulo",
     "remaxCode": "11624212",
@@ -22,6 +25,7 @@
   },
   {
     "id": "4",
+    "brokerId": "erica",
     "owner": "Luíz",
     "address": "Avenida Magno dos P. Bittencourt, 354, Barra do Una, São Sebastião, São Paulo",
     "remaxCode": "11624103",
@@ -29,6 +33,7 @@
   },
   {
     "id": "5",
+    "brokerId": "erica",
     "owner": "Milena",
     "address": "",
     "remaxCode": "",
@@ -36,6 +41,7 @@
   },
   {
     "id": "6",
+    "brokerId": "erica",
     "owner": "Augusto",
     "address": "",
     "remaxCode": "",
