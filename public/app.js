@@ -179,11 +179,17 @@ function renderBrokerList() {
     `).join("")
     : '<div class="empty-state">Nenhum perfil salvo.</div>';
 
-  $$(".broker-card").forEach(button => {
-    button.onclick = async () => {
-      brokerId = button.dataset.broker;
+  $(".broker-card").forEach(button => {
+    button.onclick = async event => {
+      event.preventDefault();
+      event.stopPropagation();
+      const selectedId = button.dataset.broker;
+      const selectedProfile = allProfiles().find(p => p.id === selectedId);
+      if (!selectedProfile) return;
+      brokerId = selectedId;
       localStorage.setItem("feedbackActiveBroker", brokerId);
-      await applyProfile(profile() || {});
+      localStorage.setItem(profileKey(), JSON.stringify(selectedProfile));
+      await applyProfile(selectedProfile);
       await loadProperties();
       showPage("feedback");
     };
