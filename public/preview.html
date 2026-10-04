@@ -35,9 +35,7 @@ async function sharePreviewOnWhatsApp(){
     window.open(`https://wa.me/?text=${text}`,"_blank");
   }catch(error){
     if(error?.name==="AbortError")return;
-    const d=JSON.parse(sessionStorage.getItem("feedbackPreview")||"null");
-    const text=encodeURIComponent(`Olá! Estou enviando o relatório semanal do imóvel ${d?.owner||""}. O PDF está pronto para ser compartilhado.`);
-    window.open(`https://wa.me/?text=${text}`,"_blank");
+    alert(error?.message||"Não foi possível gerar o PDF para enviar no WhatsApp.");
   }
 }
 document.getElementById("previewDownload")?.addEventListener("click",downloadPreviewPdf);
