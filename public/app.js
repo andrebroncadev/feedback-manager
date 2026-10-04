@@ -1,219 +1,26 @@
-const $ = s => document.querySelector(s);
-const $$ = s => [...document.querySelectorAll(s)];
-const form = $("#feedbackForm");
-const ownerSelect = $("#ownerSelect");
-const address = $("#address");
-const remaxCode = $("#remaxCode");
-const date = $("#date");
-const status = $("#saveStatus");
-
-const params = new URLSearchParams(location.search);
-const brokerId = (params.get("corretor") || "erica").toLowerCase().trim().replace(/[^a-z0-9-]/g, "-");
-const profileKey = `feedbackBrokerProfile:${brokerId}`;
-const propertyKey = `feedbackProperties:${brokerId}`;
-
-let properties = [];
-let brokerPhotoData = "";
-let actionOptions = [
-"Panfletagem estratégica / impressão e distribuição",
-"Manutenção da divulgação nas plataformas imobiliárias",
-"Divulgação nas redes sociais",
-"Divulgação no grupo interno de especialistas RE/MAX",
-"Show de Captações",
-"Placa no imóvel",
-"Revisão do anúncio",
-"Home staging",
-"Plano de marketing",
-"Vistoria completa",
-"Visitas técnicas",
-"Prospecção de investidores / construtores",
-"Monitoramento dos indicadores de desempenho",
-"Acompanhamento da procura pela região",
-"Análise do posicionamento do imóvel pela equipe de marketing"
-];
-
-const defaults = {
- message1:"Com o aumento das visitas e indicações, somado à movimentação recente na região, o cenário é positivo para a continuidade da divulgação. Seguiremos acompanhando a evolução desses indicadores e trabalhando para transformar esse aumento de interesse em visitas e, posteriormente, em uma negociação.",
- message2:"Seguimos acompanhando o desempenho de forma contínua, com foco em preservar a boa performance já alcançada e sustentar a atratividade do anúncio. O objetivo é manter a comunicação alinhada ao comportamento do mercado, garantindo que o imóvel continue se destacando dentro do cenário atual.",
- message3:"Nesta última semana, o imóvel apresentou aumento nos acessos e também passou a ser mais indicado, ampliando sua presença entre potenciais compradores e dentro da rede de divulgação. Esse movimento é importante porque demonstra que a oportunidade continua despertando interesse e ganhando circulação no mercado."
-};
-
-function today(){ const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
-date.value=today();
-Object.entries(defaults).forEach(([k,v])=>$("#"+k).value=v);
-
-function esc(s){return String(s||"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
-
-function getStates(){
-  return {
-    done: JSON.parse(localStorage.getItem(`${profileKey}:feedbackDoneActions`)||"[]"),
-    todo: JSON.parse(localStorage.getItem(`${profileKey}:feedbackTodoActions`)||"[]")
-  };
-}
-function saveStates(done,todo){
-  localStorage.setItem(`${profileKey}:feedbackDoneActions`,JSON.stringify(done));
-  localStorage.setItem(`${profileKey}:feedbackTodoActions`,JSON.stringify(todo));
-}
-
-function renderActions(){
-  const {done,todo}=getStates();
-  $("#actions").innerHTML=actionOptions.map(a=>`<div class="action-row">
-    <span>${esc(a)}</span>
-    <label><input type="checkbox" data-kind="done" data-action="${esc(a)}" ${done.includes(a)?"checked":""}> Feita</label>
-    <label><input type="checkbox" data-kind="todo" data-action="${esc(a)}" ${todo.includes(a)?"checked":""}> À fazer</label>
-  </div>`).join("");
-  $$("#actions input").forEach(x=>x.addEventListener("change",()=>{
-    const done=$$("#actions input[data-kind=done]:checked").map(x=>x.dataset.action);
-    const todo=$$("#actions input[data-kind=todo]:checked").map(x=>x.dataset.action);
-    saveStates(done,todo);
-  }));
-}
-renderActions();
-
-$("#addAction").onclick=()=>{
-  const v=$("#customAction").value.trim();
-  if(!v || actionOptions.includes(v)) return;
-  actionOptions.push(v); $("#customAction").value=""; renderActions();
-};
-
-function profile(){
-  return JSON.parse(localStorage.getItem(profileKey)||"null");
-}
-function applyProfile(p){
-  if(!p) return;
-  $("#brokerName").value=p.name||"";
-  $("#brokerPhone").value=p.phone||"";
-  $("#brokerEmail").value=p.email||"";
-  $("#creci").value=p.creci||"";
-  $("#office").value=p.office||"";
-  brokerPhotoData=p.photo||"";
-  $("#profileStatus").textContent=`Perfil: ${p.name||brokerId}`;
-  $("#pageDescription").textContent=`Página de ${p.name||brokerId} · imóveis vinculados a este corretor`;
-}
-
-function saveBrokerProfile(){
-  const p={
-    id:brokerId,
-    name:$("#brokerName").value.trim(),
-    phone:$("#brokerPhone").value.trim(),
-    email:$("#brokerEmail").value.trim(),
-    creci:$("#creci").value.trim(),
-    office:$("#office").value.trim(),
-    photo:brokerPhotoData
-  };
-  localStorage.setItem(profileKey,JSON.stringify(p));
-  $("#profileStatus").textContent="Perfil salvo nesta página ✓";
-  $("#saveStatus").textContent="Perfil salvo";
-}
-
-async function readFile(input){
-  return new Promise(resolve=>{
-    const f=input.files?.[0]; if(!f) return resolve("");
-    const reader=new FileReader(); reader.onload=()=>resolve(reader.result); reader.readAsDataURL(f);
-  });
-}
-
-$("#brokerPhoto").onchange=async e=>{
-  const f=e.target.files?.[0];
-  $("#brokerPhotoName").textContent=f?f.name:"Nenhuma foto";
-  if(f) brokerPhotoData=await readFile(e.target);
-};
-
-function renderProperties(){
-  ownerSelect.innerHTML='<option value="">Selecione...</option>'+properties.map(p=>`<option value="${esc(p.id)}">${esc(p.owner)}</option>`).join("");
-  if(properties.length) ownerSelect.value=properties[0].id;
-  ownerSelect.dispatchEvent(new Event("change"));
-}
-
-async function loadProperties(){
-  let base=[];
-  try{
-    const r=await fetch("/data/properties.json");
-    if(r.ok) base=await r.json();
-  }catch{}
-  const saved=JSON.parse(localStorage.getItem(propertyKey)||"[]");
-  const merged=[...base.filter(p=>!p.brokerId||p.brokerId===brokerId),...saved];
-  const seen=new Set();
-  properties=merged.filter(p=>{const id=String(p.id);if(seen.has(id))return false;seen.add(id);return true;});
-  renderProperties();
-}
-
-ownerSelect.onchange=()=>{
-  const p=properties.find(x=>String(x.id)===String(ownerSelect.value));
-  address.value=p?.address||"";
-  remaxCode.value=p?.remaxCode||"";
-};
-
-$("#addProperty").onclick=()=>{
-  const owner=$("#newOwner").value.trim();
-  const addr=$("#newAddress").value.trim();
-  const code=$("#newCode").value.trim();
-  if(!owner||!addr){ alert("Informe pelo menos o proprietário e o endereço."); return; }
-  const saved=JSON.parse(localStorage.getItem(propertyKey)||"[]");
-  const item={id:`${brokerId}-${Date.now()}`,brokerId,owner,address:addr,remaxCode:code,photoUrl:""};
-  saved.push(item); localStorage.setItem(propertyKey,JSON.stringify(saved));
-  properties.push(item); renderProperties(); ownerSelect.value=item.id; ownerSelect.dispatchEvent(new Event("change"));
-  $("#newOwner").value=""; $("#newAddress").value=""; $("#newCode").value="";
-};
-
-function data(){
-  const {done,todo}=getStates();
-  const p=properties.find(x=>String(x.id)===String(ownerSelect.value));
-  const savedProfile=profile();
-  return {
-    brokerId,
-    owner:ownerSelect.options[ownerSelect.selectedIndex]?.text||"",
-    address:address.value,remaxCode:remaxCode.value,date:date.value,
-    brokerName:$("#brokerName").value,brokerPhone:$("#brokerPhone").value,brokerEmail:$("#brokerEmail").value,
-    creci:$("#creci").value,office:$("#office").value,
-    brokerPhoto:brokerPhotoData||savedProfile?.photo||"",
-    views:$("#views").value,accesses:$("#accesses").value,virtualVisits:$("#virtualVisits").value,
-    exposure:$("#exposure").value,exposurePct:$("#exposurePct").value,viewsPct:$("#viewsPct").value,
-    message1:$("#message1").value,message2:$("#message2").value,message3:$("#message3").value,
-    doneActions:done,todoActions:todo,photoUrl:p?.photoUrl||""
-  };
-}
-
-async function buildData(){
-  const d=data();
-  d.propertyPhoto=await readFile($("#propertyPhoto"));
-  d.statsPhoto=await readFile($("#statsPhoto"));
-  return d;
-}
-
-["propertyPhoto","statsPhoto"].forEach(id=>$("#"+id).onchange=e=>{
-  const f=e.target.files?.[0]; const map={propertyPhoto:"propertyName",statsPhoto:"statsName"};
-  $("#"+map[id]).textContent=f?f.name:"Nenhuma imagem";
-});
-
-$("#saveBroker").onclick=()=>saveBrokerProfile();
-
-async function openPreview(){
-  status.textContent="Montando...";
-  const d=await buildData();
-  sessionStorage.setItem("feedbackPreview",JSON.stringify(d));
-  window.open("/preview","_blank");
-  status.textContent="Pronto";
-}
-$("#previewButton").onclick=openPreview;
-
-form.onsubmit=async e=>{
-  e.preventDefault(); status.textContent="Gerando PDF...";
-  try{
-    if(!profile()) saveBrokerProfile();
-    const d=await buildData();
-    const r=await fetch("/api/pdf",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)});
-    if(!r.ok) throw new Error("Falha");
-    const blob=await r.blob(), url=URL.createObjectURL(blob);
-    const a=document.createElement("a"); a.href=url; a.download=`relatorio-${(d.owner||"imovel").replace(/[^a-z0-9À-ÿ _-]/gi,"").trim().replace(/\s+/g,"-").toLowerCase()}.pdf`; a.click(); URL.revokeObjectURL(url);
-    status.textContent="PDF pronto";
-  }catch(err){console.error(err);status.textContent="Erro ao gerar PDF";}
-};
-
-const existing=profile();
-if(existing) applyProfile(existing);
-else {
-  const defaultsProfile={id:brokerId,name:"Erica Bronca",phone:"(12) 98123-5534",email:"ericabronca@remax.com.br",creci:"CRECI 199167",office:"324 Rua Claudio Izidoro do Espírito Santo, Juquehy — São Sebastião",photo:""};
-  applyProfile(defaultsProfile);
-}
-loadProperties();
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const form=$("#feedbackForm"),ownerSelect=$("#ownerSelect"),address=$("#address"),date=$("#date"),status=$("#saveStatus");
+const params=new URLSearchParams(location.search),brokerId=(params.get("corretor")||"erica").toLowerCase().trim().replace(/[^a-z0-9-]/g,"-");
+const profileKey=`feedbackBrokerProfile:${brokerId}`,propertyKey=`feedbackProperties:${brokerId}`;let properties=[],brokerPhotoData="";
+const actionOptions=["Panfletagem estratégica / impressão e distribuição","Manutenção da divulgação nas plataformas imobiliárias","Divulgação nas redes sociais","Divulgação no grupo interno de especialistas RE/MAX","Show de Captações","Placa no imóvel","Revisão do anúncio","Home staging","Plano de marketing","Vistoria completa","Visitas técnicas","Prospecção de investidores / construtores","Monitoramento dos indicadores de desempenho","Acompanhamento da procura pela região","Análise do posicionamento do imóvel pela equipe de marketing"];
+function today(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)} date.value=today();
+function esc(s){return String(s||"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))} function safeJSON(k,f){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(f))}catch{return f}}
+function getStates(){return{done:safeJSON(`${profileKey}:feedbackDoneActions`,[]),todo:safeJSON(`${profileKey}:feedbackTodoActions`,[])}} function saveStates(d,t){localStorage.setItem(`${profileKey}:feedbackDoneActions`,JSON.stringify(d));localStorage.setItem(`${profileKey}:feedbackTodoActions`,JSON.stringify(t))}
+function renderActions(){const {done,todo}=getStates();$("#actions").innerHTML=actionOptions.map(a=>`<div class="action-row"><span>${esc(a)}</span><label><input type="checkbox" data-kind="done" data-action="${esc(a)}" ${done.includes(a)?"checked":""}> Feita</label><label><input type="checkbox" data-kind="todo" data-action="${esc(a)}" ${todo.includes(a)?"checked":""}> À fazer</label></div>`).join("");$$('#actions input').forEach(x=>x.onchange=()=>saveStates($$('#actions input[data-kind=done]:checked').map(x=>x.dataset.action),$$('#actions input[data-kind=todo]:checked').map(x=>x.dataset.action)))} renderActions();
+$("#addAction").onclick=()=>{const v=$("#customAction").value.trim();if(v&&!actionOptions.includes(v)){actionOptions.push(v);$("#customAction").value="";renderActions()}};
+function profile(){return safeJSON(profileKey,null)} function applyProfile(p){if(!p)return;$("#brokerName").value=p.name||"";$("#brokerPhone").value=p.phone||"";$("#brokerEmail").value=p.email||"";$("#creci").value=p.creci||"";$("#office").value=p.office||"";brokerPhotoData=p.photo||"";$("#profileStatus").textContent=`Perfil: ${p.name||brokerId}`;$("#profileStatusSmall").textContent="Perfil salvo nesta página ✓";$("#pageDescription").textContent=`Página de ${p.name||brokerId} · imóveis vinculados a este corretor`}
+function saveBrokerProfile(){const p={id:brokerId,name:$("#brokerName").value.trim(),phone:$("#brokerPhone").value.trim(),email:$("#brokerEmail").value.trim(),creci:$("#creci").value.trim(),office:$("#office").value.trim(),photo:brokerPhotoData};localStorage.setItem(profileKey,JSON.stringify(p));applyProfile(p);status.textContent="Perfil salvo"}
+function compressImage(file,max=1800,quality=.82){return new Promise((resolve,reject)=>{const r=new FileReader();r.onerror=reject;r.onload=()=>{const img=new Image();img.onload=()=>{const scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),w=Math.max(1,Math.round(img.naturalWidth*scale)),h=Math.max(1,Math.round(img.naturalHeight*scale)),c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);resolve(c.toDataURL("image/jpeg",quality))};img.onerror=reject;img.src=r.result};r.readAsDataURL(file)})}
+$("#brokerPhoto").onchange=async e=>{const f=e.target.files?.[0];$("#brokerPhotoName").textContent=f?f.name:"Nenhuma foto";if(f){brokerPhotoData=await compressImage(f,900,.82);saveBrokerProfile()}};
+function renderProperties(id){ownerSelect.innerHTML='<option value="">Selecione...</option>'+properties.map(p=>`<option value="${esc(p.id)}">${esc(p.owner)}</option>`).join("");if(id!=null)ownerSelect.value=String(id);else if(properties.length)ownerSelect.value=String(properties[0].id);ownerSelect.dispatchEvent(new Event("change"))}
+async function loadProperties(){let base=[];try{const r=await fetch("/data/properties.json",{cache:"no-store"});if(r.ok)base=await r.json()}catch{}const saved=safeJSON(propertyKey,[]),map=new Map(saved.map(p=>[String(p.id),p]));properties=base.filter(p=>(!p.brokerId||p.brokerId===brokerId)&&!['Milena','Augusto'].includes(p.owner)).map(p=>({...p,...(map.get(String(p.id))||{})}));saved.filter(p=>!properties.some(x=>String(x.id)===String(p.id))).forEach(p=>properties.push(p));renderProperties()}
+ownerSelect.onchange=()=>{const p=properties.find(x=>String(x.id)===String(ownerSelect.value));address.value=p?.address||"";$("#remaxCodeDisplay").textContent=p?.remaxCode||"—";$("#propertyName").textContent=p?.photoUrl?"Foto salva — escolha outra para substituir":"Nenhuma foto salva"};
+$("#addProperty").onclick=()=>{const owner=$("#newOwner").value.trim(),addr=$("#newAddress").value.trim(),code=$("#newCode").value.trim();if(!owner||!addr){alert("Informe o proprietário e o endereço.");return}const saved=safeJSON(propertyKey,[]),item={id:`${brokerId}-${Date.now()}`,brokerId,owner,address:addr,remaxCode:code,photoUrl:""};saved.push(item);localStorage.setItem(propertyKey,JSON.stringify(saved));properties.push(item);renderProperties(item.id);$("#newOwner").value=$("#newAddress").value=$("#newCode").value=""};
+$("#propertyPhoto").onchange=async e=>{const f=e.target.files?.[0],p=properties.find(x=>String(x.id)===String(ownerSelect.value));if(!f||!p)return;status.textContent="Salvando foto...";try{p.photoUrl=await compressImage(f,1800,.82);const saved=safeJSON(propertyKey,[]).filter(x=>String(x.id)!==String(p.id));saved.push(p);localStorage.setItem(propertyKey,JSON.stringify(saved));$("#propertyName").textContent=`${f.name} — salva neste imóvel`;status.textContent="Foto do imóvel salva"}catch{status.textContent="Não foi possível salvar a foto"}};
+$("#statsPhoto").onchange=e=>{const f=e.target.files?.[0];$("#statsName").textContent=f?f.name:"Nenhuma imagem"};
+function data(){const {done,todo}=getStates(),p=properties.find(x=>String(x.id)===String(ownerSelect.value)),sp=profile();return{brokerId,owner:ownerSelect.options[ownerSelect.selectedIndex]?.text||"",address:address.value,remaxCode:p?.remaxCode||"",date:date.value,brokerName:$("#brokerName").value,brokerPhone:$("#brokerPhone").value,brokerEmail:$("#brokerEmail").value,creci:$("#creci").value,office:$("#office").value,brokerPhoto:brokerPhotoData||sp?.photo||"",views:$("#views").value,accesses:$("#accesses").value,virtualVisits:$("#virtualVisits").value,exposure:$("#exposure").value,exposurePct:$("#exposurePct").value,viewsPct:$("#viewsPct").value,message1:$("#message1").value,message2:$("#message2").value,message3:$("#message3").value,doneActions:done,todoActions:todo,photoUrl:p?.photoUrl||""}}
+async function readOptionalImage(input){const f=input.files?.[0];return f?compressImage(f,1800,.82):""} async function buildData(){const d=data();d.propertyPhoto=d.photoUrl||await readOptionalImage($("#propertyPhoto"));d.statsPhoto=await readOptionalImage($("#statsPhoto"));return d}
+$("#saveBroker").onclick=saveBrokerProfile;$("#menuButton").onclick=()=>$("#menuPanel").hidden=!$("#menuPanel").hidden;$$('#menuPanel [data-scroll]').forEach(b=>b.onclick=()=>{$("#menuPanel").hidden=true;document.getElementById(b.dataset.scroll)?.scrollIntoView({behavior:"smooth",block:"start"})});document.addEventListener("click",e=>{if(!e.target.closest("#menuPanel")&&!e.target.closest("#menuButton"))$("#menuPanel").hidden=true});
+async function openPreview(){status.textContent="Montando...";try{const d=await buildData();sessionStorage.setItem("feedbackPreview",JSON.stringify(d));window.open("/preview","_blank");status.textContent="Pronto"}catch{status.textContent="Não foi possível montar a prévia"}} $("#previewButton").onclick=openPreview;
+form.onsubmit=async e=>{e.preventDefault();status.textContent="Gerando PDF...";try{if(!profile())saveBrokerProfile();const d=await buildData(),r=await fetch("/api/pdf",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement("a"),owner=(d.owner||"imovel").trim().replace(/[\\/:*?"<>|]/g,"");a.href=url;a.download=`FEEDBACK_${owner}.pdf`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);status.textContent="PDF pronto ✓"}catch(err){console.error(err);status.textContent="Erro ao gerar PDF";alert("Não foi possível gerar o PDF. Tente novamente; imagens muito grandes agora são reduzidas automaticamente.")}};
+const existing=profile();applyProfile(existing||{id:brokerId,name:"Erica Bronca",phone:"(12) 98123-5534",email:"ericabronca@remax.com.br",creci:"CRECI 199167",office:"324 Rua Claudio Izidoro do Espírito Santo, Juquehy — São Sebastião",photo:""});loadProperties();
