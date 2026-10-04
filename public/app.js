@@ -1,42 +1,559 @@
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const form=$("#feedbackForm"),ownerSelect=$("#ownerSelect"),address=$("#address"),status=$("#saveStatus");
-const params=new URLSearchParams(location.search),brokerId=(params.get("corretor")||"erica").toLowerCase().trim().replace(/[^a-z0-9-]/g,"-");
-const profileKey=`feedbackBrokerProfile:${brokerId}`,propertyKey=`feedbackProperties:${brokerId}`;
-let properties=[],brokerPhotoData="";
-const actionOptions=["Panfletagem estratégica / impressão e distribuição","Manutenção da divulgação nas plataformas imobiliárias","Divulgação nas redes sociais","Divulgação no grupo interno de especialistas RE/MAX","Show de Captações","Placa no imóvel","Revisão do anúncio","Home staging","Plano de marketing","Vistoria completa","Visitas técnicas","Prospecção de investidores / construtores","Monitoramento dos indicadores de desempenho","Acompanhamento da procura pela região","Análise do posicionamento do imóvel pela equipe de marketing"];
-function today(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)}
-function esc(s){return String(s||"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
-function showPage(name){$(".app-page").forEach(p=>p.classList.add("hidden"));const el=$("#page"+name[0].toUpperCase()+name.slice(1));if(el)el.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});if(name==="brokers")renderBrokerList();if(name==="owners")renderOwnerList();if(name==="properties")renderPropertyManager()}
-function renderBrokerList(){const list=safeJSON("feedbackBrokerProfiles",[]);$("#brokerList").innerHTML=list.length?list.map(p=>'<button class="broker-card '+(p.id===brokerId?"active":"")+'" data-broker="'+esc(p.id)+'"><span class="avatar">'+esc((p.name||"?")[0])+'</span><span><b>'+esc(p.name)+'</b><small>'+(p.id===brokerId?"Perfil atual":"Selecionar perfil")+'</small></span></button>').join(""):'<div class="empty-state">Nenhum perfil salvo.</div>';$(".broker-card").forEach(b=>b.onclick=async()=>{brokerId=b.dataset.broker;localStorage.setItem("feedbackActiveBroker",brokerId);await applyProfile(profile()||{});await loadProperties();showPage("feedback")})}
-function renderOwnerList(){const el=$("#ownerList");el.innerHTML=properties.length?properties.map(p=>'<button class="owner-card" data-p="'+esc(p.id)+'"><b>'+esc(p.owner)+'</b><span>'+esc(p.address)+'</span></button>').join(""):'<div class="empty-state">Nenhum proprietário cadastrado.</div>';$(".owner-card").forEach(b=>b.onclick=()=>{showPage("feedback");ownerSelect.value=b.dataset.p;ownerSelect.dispatchEvent(new Event("change"))})}
-function renderPropertyManager(){const p=properties.find(x=>String(x.id)===String(ownerSelect.value));$("#propertyPageBroker").textContent=profile()?.name||"corretor";const el=$("#propertyManager");if(!p){el.innerHTML='<div class="empty-state">Selecione um imóvel.</div>';return}el.innerHTML='<div class="property-manager-head"><h2>'+esc(p.owner)+'</h2><p>'+esc(p.address)+'</p></div><label class="upload">Foto do imóvel<input id="managerPropertyPhoto" type="file" accept="image/*"><span id="managerPhotoName">Nenhuma foto salva</span></label>';$("#managerPropertyPhoto").onchange=async e=>{const f=e.target.files?.[0];if(!f)return;await putPhoto("property:"+brokerId+":"+p.id,await compressImage(f,4000,.94));$("#managerPhotoName").textContent=f.name+" — salva neste imóvel"};getPhoto("property:"+brokerId+":"+p.id).then(b=>{if(b)$("#managerPhotoName").textContent="Foto salva — escolher outra substitui a anterior"})}
-function safeJSON(k,f){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(f))}catch{return f}}
-function getStates(){return{done:safeJSON(`${profileKey}:feedbackDoneActions`,[]),todo:safeJSON(`${profileKey}:feedbackTodoActions`,[])}}
-function saveStates(d,t){localStorage.setItem(`${profileKey}:feedbackDoneActions`,JSON.stringify(d));localStorage.setItem(`${profileKey}:feedbackTodoActions`,JSON.stringify(t))}
-function renderActions(){const {done,todo}=getStates();$("#actions").innerHTML=actionOptions.map(a=>`<div class="action-row"><span>${esc(a)}</span><label><input type="checkbox" data-kind="done" data-action="${esc(a)}" ${done.includes(a)?"checked":""}> Feita</label><label><input type="checkbox" data-kind="todo" data-action="${esc(a)}" ${todo.includes(a)?"checked":""}> À fazer</label></div>`).join("");$$('#actions input').forEach(x=>x.onchange=()=>saveStates($$('#actions input[data-kind=done]:checked').map(x=>x.dataset.action),$$('#actions input[data-kind=todo]:checked').map(x=>x.dataset.action)))}
-renderActions();
-$("#addAction").onclick=()=>{const v=$("#customAction").value.trim();if(v&&!actionOptions.includes(v)){actionOptions.push(v);$("#customAction").value="";renderActions()}};
-const DB_NAME="feedback-manager-media",DB_VERSION=1;
-function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("photos"))db.createObjectStore("photos")};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
-async function putPhoto(key,blob){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction("photos","readwrite");tx.objectStore("photos").put(blob,key);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}})}
-async function getPhoto(key){if(!key)return null;const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction("photos","readonly");const r=tx.objectStore("photos").get(key);r.onsuccess=()=>{const v=r.result;db.close();resolve(v||null)};r.onerror=()=>{db.close();reject(r.error)}})}
-function blobToDataURL(blob){return new Promise((resolve,reject)=>{if(!blob)return resolve("");const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(blob)})}
-function profile(){return safeJSON(profileKey,null)}
-async function migrateOldProfile(){const p=profile();if(p?.photo?.startsWith("data:")){try{const res=await fetch(p.photo);await putPhoto(`broker:${brokerId}`,await res.blob());delete p.photo;localStorage.setItem(profileKey,JSON.stringify(p))}catch{}}}
-async function applyProfile(p){if(!p)return;$("#brokerName").value=p.name||"";$("#brokerPhone").value=p.phone||"";$("#brokerEmail").value=p.email||"";$("#creci").value=p.creci||"";$("#office").value=p.office||"";brokerPhotoData=await blobToDataURL(await getPhoto(`broker:${brokerId}`));$("#profileStatus").textContent=`Perfil: ${p.name||brokerId}`;$("#profileStatusSmall").textContent="Perfil salvo nesta página ✓";$("#pageDescription").textContent=`Página de ${p.name||brokerId} · imóveis vinculados a este corretor`;$("#brokerPhotoName").textContent=brokerPhotoData?"Foto salva no perfil ✓":"Nenhuma foto"}
-async function saveBrokerProfile(){const p={id:brokerId,name:$("#brokerName").value.trim(),phone:$("#brokerPhone").value.trim(),email:$("#brokerEmail").value.trim(),creci:$("#creci").value.trim(),office:$("#office").value.trim()};localStorage.setItem(profileKey,JSON.stringify(p));await applyProfile(p);status.textContent="Perfil salvo ✓"}
-function compressImage(file,max=2400,quality=.9){return new Promise((resolve,reject)=>{const r=new FileReader();r.onerror=reject;r.onload=()=>{const img=new Image();img.onload=()=>{const scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),w=Math.max(1,Math.round(img.naturalWidth*scale)),h=Math.max(1,Math.round(img.naturalHeight*scale)),c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);c.toBlob(b=>b?resolve(b):reject(new Error("Falha ao preparar imagem")),"image/jpeg",quality)};img.onerror=reject;img.src=r.result};r.readAsDataURL(file)})}
-$("#brokerPhoto").onchange=async e=>{const f=e.target.files?.[0];if(!f)return;status.textContent="Salvando foto do perfil...";try{const blob=await compressImage(f,2400,.9);await putPhoto(`broker:${brokerId}`,blob);brokerPhotoData=await blobToDataURL(blob);$("#brokerPhotoName").textContent=`${f.name} — salva no perfil`;const p=profile()||{id:brokerId};localStorage.setItem(profileKey,JSON.stringify({...p}));await applyProfile({...p});status.textContent="Foto do corretor salva ✓"}catch(e){console.error(e);status.textContent="Erro ao salvar foto";alert("Não foi possível salvar a foto do corretor.")}};
-function renderProperties(id){ownerSelect.innerHTML='<option value="">Selecione...</option>'+properties.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.owner)+'</option>').join('');if(id!=null)ownerSelect.value=String(id);else if(properties.length)ownerSelect.value=String(properties[0].id);ownerSelect.dispatchEvent(new Event("change"))}
-ownerSelect.onchange=async()=>{const p=properties.find(x=>String(x.id)===String(ownerSelect.value));address.value=p?.address||"";$("#remaxCodeDisplay").textContent=p?.remaxCode||"—";const photo=await getPhoto(`property:${brokerId}:${p?.id}`);$("#propertyName").textContent=photo?"Foto salva — escolha outra para substituir":"Nenhuma foto salva"};
-$("#statsPhoto").onchange=e=>{const f=e.target.files?.[0];$("#statsName").textContent=f?f.name:"Nenhuma imagem"};
-async function data(){const {done,todo}=getStates(),p=properties.find(x=>String(x.id)===String(ownerSelect.value)),sp=profile();return{brokerId,owner:ownerSelect.options[ownerSelect.selectedIndex]?.text||"",address:address.value,date:today(),brokerName:$("#brokerName").value,brokerPhone:$("#brokerPhone").value,brokerEmail:$("#brokerEmail").value,creci:$("#creci").value,office:$("#office").value,brokerPhoto:brokerPhotoData||await blobToDataURL(await getPhoto(`broker:${brokerId}`))||sp?.photo||"",views:$("#views").value,accesses:$("#accesses").value,virtualVisits:$("#virtualVisits").value,exposure:$("#exposure").value,exposurePct:$("#exposurePct").value,viewsPct:$("#viewsPct").value,message1:$("#message1").value,message2:$("#message2").value,message3:$("#message3").value,doneActions:done,todoActions:todo,photoUrl:""}}
-async function readOptionalImage(input){const f=input.files?.[0];return f?blobToDataURL(await compressImage(f,3000,.9)):""}
-async function buildData(){const d=await data();d.statsPhoto=await readOptionalImage($("#statsPhoto"));return d}
-$("#saveBroker").onclick=saveBrokerProfile;$("#menuButton").onclick=()=>$("#menuPanel").hidden=!$("#menuPanel").hidden;$$('#menuPanel [data-scroll]').forEach(b=>b.onclick=()=>{$("#menuPanel").hidden=true;document.getElementById(b.dataset.scroll)?.scrollIntoView({behavior:"smooth",block:"start"})});document.addEventListener("click",e=>{if(!e.target.closest("#menuPanel")&&!e.target.closest("#menuButton"))$("#menuPanel").hidden=true});
-async function openPreview(){status.textContent="Montando prévia...";try{const d=await buildData();sessionStorage.setItem("feedbackPreview",JSON.stringify(d));window.open("/preview","_blank");status.textContent="Pronto ✓"}catch(e){console.error(e);status.textContent="Não foi possível montar a prévia";alert("Preencha o perfil e selecione um imóvel antes de visualizar o relatório.")}}
-$("#previewButton").onclick=openPreview;
-form.onsubmit=async e=>{e.preventDefault();status.textContent="Gerando PDF...";try{if(!profile())await saveBrokerProfile();const d=await buildData(),r=await fetch("/api/pdf",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement("a"),owner=(d.owner||"imovel").trim().replace(/[\\/:*?"<>|]/g,"");a.href=url;a.download=`FEEDBACK_${owner}.pdf`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);status.textContent="PDF pronto ✓"}catch(err){console.error(err);status.textContent="Erro ao gerar PDF";alert("Não foi possível gerar o PDF. Confira se há um imóvel selecionado.")}};
-(async()=>{await migrateOldProfile();const existing=profile();await applyProfile(existing||{id:brokerId,name:"Erica Bronca",phone:"(12) 98123-5534",email:"ericabronca@remax.com.br",creci:"CRECI 199167",office:"324 Rua Claudio Izidoro do Espírito Santo, Juquehy — São Sebastião"});await loadProperties()})();
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
 
-$("#addBrokerButton").onclick=()=>{$("#brokerFormPanel").classList.remove("hidden");brokerId="corretor-"+Date.now();$("#brokerName").value=$("#brokerPhone").value=$("#brokerEmail").value=$("#creci").value=$("#office").value="";$("#brokerPhotoName").textContent="Nenhuma foto"};$("#closeBrokerForm").onclick=()=>$("#brokerFormPanel").classList.add("hidden");$("#saveBroker").onclick=saveBrokerProfile;$("#brokerPhoto").onchange=async e=>{const f=e.target.files?.[0];if(!f)return;await putPhoto("broker:"+brokerId,await compressImage(f,3000,.92));$("#brokerPhotoName").textContent=f.name+" — salva no perfil"};$$("[data-page]").forEach(b=>b.onclick=()=>{showPage(b.dataset.page);$("#menuPanel").hidden=true});$("#menuButton").onclick=()=>$("#menuPanel").hidden=!$("#menuPanel").hidden;$("#menuPanel").onclick=e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.action==="properties")showPage("properties");else if(b.dataset.page)showPage(b.dataset.page);$("#menuPanel").hidden=true});
+const form = $("#feedbackForm");
+const ownerSelect = $("#ownerSelect");
+const address = $("#address");
+const status = $("#saveStatus");
+
+const params = new URLSearchParams(location.search);
+let brokerId = (params.get("corretor") || localStorage.getItem("feedbackActiveBroker") || "erica")
+  .toLowerCase().trim().replace(/[^a-z0-9-]/g, "-");
+
+let properties = [];
+let brokerPhotoData = "";
+
+const defaultErica = {
+  id: "erica",
+  name: "Érica Bronca",
+  phone: "(12) 98123-5534",
+  email: "ericabronca@remax.com.br",
+  creci: "CRECI 199167",
+  office: "324 Rua Claudio Izidoro do Espírito Santo, Juquehy — São Sebastião"
+};
+
+const actionOptions = [
+  "Panfletagem estratégica / impressão e distribuição",
+  "Manutenção da divulgação nas plataformas imobiliárias",
+  "Divulgação nas redes sociais",
+  "Divulgação no grupo interno de especialistas RE/MAX",
+  "Show de Captações",
+  "Placa no imóvel",
+  "Revisão do anúncio",
+  "Home staging",
+  "Plano de marketing",
+  "Vistoria completa",
+  "Visitas técnicas",
+  "Prospecção de investidores / construtores",
+  "Monitoramento dos indicadores de desempenho",
+  "Acompanhamento da procura pela região",
+  "Análise do posicionamento do imóvel pela equipe de marketing"
+];
+
+function profileKey() {
+  return `feedbackBrokerProfile:${brokerId}`;
+}
+
+function getStates() {
+  return {
+    done: safeJSON(`${profileKey()}:feedbackDoneActions`, []),
+    todo: safeJSON(`${profileKey()}:feedbackTodoActions`, [])
+  };
+}
+
+function today() {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+}
+
+function esc(s) {
+  return String(s || "").replace(/[&<>"]/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"
+  }[c]));
+}
+
+function safeJSON(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+  } catch {
+    return fallback;
+  }
+}
+
+function profile() {
+  return safeJSON(profileKey(), null);
+}
+
+function allProfiles() {
+  return safeJSON("feedbackBrokerProfiles", []);
+}
+
+function saveStates(done, todo) {
+  localStorage.setItem(`${profileKey()}:feedbackDoneActions`, JSON.stringify(done));
+  localStorage.setItem(`${profileKey()}:feedbackTodoActions`, JSON.stringify(todo));
+}
+
+function ensureDefaultProfile() {
+  const profiles = allProfiles();
+  const existing = profiles.find(p => p.id === "erica");
+
+  if (!existing) {
+    profiles.push(defaultErica);
+    localStorage.setItem("feedbackBrokerProfiles", JSON.stringify(profiles));
+  }
+
+  if (!profile()) {
+    localStorage.setItem("feedbackBrokerProfile:erica", JSON.stringify(defaultErica));
+  }
+}
+
+async function loadProperties() {
+  try {
+    const response = await fetch("/data/properties.json", { cache: "no-store" });
+    if (!response.ok) throw new Error("Não foi possível carregar os imóveis.");
+    const all = await response.json();
+    properties = all.filter(p => String(p.brokerId).toLowerCase() === String(brokerId).toLowerCase());
+
+    if (!properties.length && brokerId === "erica") {
+      properties = all;
+    }
+
+    renderProperties();
+  } catch (error) {
+    console.error(error);
+    properties = [];
+    renderProperties();
+  }
+}
+
+function renderProperties(id) {
+  ownerSelect.innerHTML =
+    '<option value="">Selecione o imóvel...</option>' +
+    properties.map(p =>
+      `<option value="${esc(p.id)}">${esc(p.owner)}</option>`
+    ).join("");
+
+  if (id != null) ownerSelect.value = String(id);
+  else if (properties.length) ownerSelect.value = String(properties[0].id);
+
+  ownerSelect.dispatchEvent(new Event("change"));
+}
+
+function renderActions() {
+  const { done, todo } = getStates();
+
+  $("#actions").innerHTML = actionOptions.map(action => `
+    <div class="action-row">
+      <span>${esc(action)}</span>
+      <label><input type="checkbox" data-kind="done" data-action="${esc(action)}" ${done.includes(action) ? "checked" : ""}> Feita</label>
+      <label><input type="checkbox" data-kind="todo" data-action="${esc(action)}" ${todo.includes(action) ? "checked" : ""}> À fazer</label>
+    </div>
+  `).join("");
+
+  $$("#actions input").forEach(input => {
+    input.onchange = () => saveStates(
+      $$("#actions input[data-kind=done]:checked").map(x => x.dataset.action),
+      $$("#actions input[data-kind=todo]:checked").map(x => x.dataset.action)
+    );
+  });
+}
+
+function showPage(name) {
+  $$(".app-page").forEach(page => page.classList.add("hidden"));
+  const page = $("#page" + name[0].toUpperCase() + name.slice(1));
+
+  if (page) page.classList.remove("hidden");
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  if (name === "brokers") renderBrokerList();
+  if (name === "owners") renderOwnerList();
+  if (name === "properties") renderPropertyManager();
+
+  $("#menuPanel").hidden = true;
+}
+
+function renderBrokerList() {
+  const list = allProfiles();
+
+  $("#brokerList").innerHTML = list.length
+    ? list.map(p => `
+      <button type="button" class="broker-card ${p.id === brokerId ? "active" : ""}" data-broker="${esc(p.id)}">
+        <span class="avatar">${esc((p.name || "?")[0])}</span>
+        <span>
+          <b>${esc(p.name || p.id)}</b>
+          <small>${p.id === brokerId ? "Perfil atual" : "Selecionar perfil"}</small>
+        </span>
+      </button>
+    `).join("")
+    : '<div class="empty-state">Nenhum perfil salvo.</div>';
+
+  $$(".broker-card").forEach(button => {
+    button.onclick = async () => {
+      brokerId = button.dataset.broker;
+      localStorage.setItem("feedbackActiveBroker", brokerId);
+      await applyProfile(profile() || {});
+      await loadProperties();
+      showPage("feedback");
+    };
+  });
+}
+
+function renderOwnerList() {
+  const el = $("#ownerList");
+
+  el.innerHTML = properties.length
+    ? properties.map(p => `
+      <button type="button" class="owner-card" data-p="${esc(p.id)}">
+        <b>${esc(p.owner)}</b>
+        <span>${esc(p.address)}</span>
+      </button>
+    `).join("")
+    : '<div class="empty-state">Nenhum imóvel cadastrado para este corretor.</div>';
+
+  $$(".owner-card").forEach(button => {
+    button.onclick = () => {
+      showPage("feedback");
+      ownerSelect.value = button.dataset.p;
+      ownerSelect.dispatchEvent(new Event("change"));
+    };
+  });
+}
+
+function renderPropertyManager() {
+  const p = properties.find(x => String(x.id) === String(ownerSelect.value));
+  $("#propertyPageBroker").textContent = profile()?.name || "corretor";
+  const el = $("#propertyManager");
+
+  if (!p) {
+    el.innerHTML = '<div class="empty-state">Selecione um imóvel no feedback primeiro.</div>';
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="property-manager-head">
+      <h2>${esc(p.owner)}</h2>
+      <p>${esc(p.address)}</p>
+    </div>
+    <label class="upload">
+      Foto do imóvel
+      <input id="managerPropertyPhoto" type="file" accept="image/*">
+      <span id="managerPhotoName">Nenhuma foto salva</span>
+    </label>
+  `;
+
+  $("#managerPropertyPhoto").onchange = async event => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    await putPhoto(`property:${brokerId}:${p.id}`, await compressImage(file, 4000, .94));
+    $("#managerPhotoName").textContent = file.name + " — salva neste imóvel";
+  };
+
+  getPhoto(`property:${brokerId}:${p.id}`).then(blob => {
+    if (blob) $("#managerPhotoName").textContent = "Foto salva — escolher outra substitui a anterior";
+  });
+}
+
+const DB_NAME = "feedback-manager-media";
+const DB_VERSION = 1;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains("photos")) db.createObjectStore("photos");
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function putPhoto(key, blob) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("photos", "readwrite");
+    tx.objectStore("photos").put(blob, key);
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); reject(tx.error); };
+  });
+}
+
+async function getPhoto(key) {
+  if (!key) return null;
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("photos", "readonly");
+    const request = tx.objectStore("photos").get(key);
+    request.onsuccess = () => { const value = request.result; db.close(); resolve(value || null); };
+    request.onerror = () => { db.close(); reject(request.error); };
+  });
+}
+
+function blobToDataURL(blob) {
+  return new Promise((resolve, reject) => {
+    if (!blob) return resolve("");
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+function compressImage(file, max = 2400, quality = .9) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+        const w = Math.max(1, Math.round(img.naturalWidth * scale));
+        const h = Math.max(1, Math.round(img.naturalHeight * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Falha ao preparar imagem")), "image/jpeg", quality);
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function applyProfile(p) {
+  if (!p) return;
+
+  $("#brokerName").value = p.name || "";
+  $("#brokerPhone").value = p.phone || "";
+  $("#brokerEmail").value = p.email || "";
+  $("#creci").value = p.creci || "";
+  $("#office").value = p.office || "";
+
+  brokerPhotoData = await blobToDataURL(await getPhoto(`broker:${brokerId}`));
+
+  $("#profileStatus").textContent = `Perfil: ${p.name || brokerId}`;
+  $("#pageDescription").textContent = `Página de ${p.name || brokerId} · imóveis vinculados a este corretor`;
+  $("#brokerPhotoName").textContent = brokerPhotoData ? "Foto salva no perfil ✓" : "Nenhuma foto";
+}
+
+async function saveBrokerProfile() {
+  const id = brokerId;
+  const p = {
+    id,
+    name: $("#brokerName").value.trim(),
+    phone: $("#brokerPhone").value.trim(),
+    email: $("#brokerEmail").value.trim(),
+    creci: $("#creci").value.trim(),
+    office: $("#office").value.trim()
+  };
+
+  localStorage.setItem(`feedbackBrokerProfile:${id}`, JSON.stringify(p));
+
+  const profiles = allProfiles().filter(item => item.id !== id);
+  profiles.push(p);
+  localStorage.setItem("feedbackBrokerProfiles", JSON.stringify(profiles));
+
+  await applyProfile(p);
+  renderBrokerList();
+  status.textContent = "Perfil salvo ✓";
+}
+
+function resetBrokerForm() {
+  brokerId = "corretor-" + Date.now();
+  $("#brokerName").value = "";
+  $("#brokerPhone").value = "";
+  $("#brokerEmail").value = "";
+  $("#creci").value = "";
+  $("#office").value = "";
+  $("#brokerPhotoName").textContent = "Nenhuma foto";
+  brokerPhotoData = "";
+}
+
+async function openPreview() {
+  status.textContent = "Montando prévia...";
+
+  try {
+    const data = await buildData();
+    sessionStorage.setItem("feedbackPreview", JSON.stringify(data));
+    window.open("/preview", "_blank");
+    status.textContent = "Pronto ✓";
+  } catch (error) {
+    console.error(error);
+    status.textContent = "Não foi possível montar a prévia";
+    alert("Preencha o perfil e selecione um imóvel antes de visualizar o relatório.");
+  }
+}
+
+async function readOptionalImage(input) {
+  const file = input.files?.[0];
+  return file ? blobToDataURL(await compressImage(file, 3000, .9)) : "";
+}
+
+async function buildData() {
+  const data = await collectData();
+  data.statsPhoto = await readOptionalImage($("#statsPhoto"));
+  return data;
+}
+
+async function collectData() {
+  const { done, todo } = getStates();
+  const property = properties.find(x => String(x.id) === String(ownerSelect.value));
+  const savedProfile = profile();
+
+  if (!savedProfile || !property) throw new Error("Perfil ou imóvel não selecionado.");
+
+  const propertyPhoto = await getPhoto(`property:${brokerId}:${property.id}`);
+
+  return {
+    brokerId,
+    owner: property.owner,
+    address: property.address,
+    date: today(),
+    brokerName: $("#brokerName").value,
+    brokerPhone: $("#brokerPhone").value,
+    brokerEmail: $("#brokerEmail").value,
+    creci: $("#creci").value,
+    office: $("#office").value,
+    brokerPhoto: brokerPhotoData || await blobToDataURL(await getPhoto(`broker:${brokerId}`)),
+    propertyPhoto: await blobToDataURL(propertyPhoto),
+    views: $("#views").value,
+    accesses: $("#accesses").value,
+    virtualVisits: $("#virtualVisits").value,
+    exposure: $("#exposure").value,
+    exposurePct: $("#exposurePct").value,
+    viewsPct: $("#viewsPct").value,
+    message1: $("#message1").value,
+    message2: $("#message2").value,
+    message3: $("#message3").value,
+    doneActions: done,
+    todoActions: todo
+  };
+}
+
+async function migrateOldProfile() {
+  const p = profile();
+  if (p?.photo?.startsWith("data:")) {
+    try {
+      const response = await fetch(p.photo);
+      await putPhoto(`broker:${brokerId}`, await response.blob());
+      delete p.photo;
+      localStorage.setItem(profileKey(), JSON.stringify(p));
+    } catch {}
+  }
+}
+
+$("#addAction").onclick = () => {
+  const value = $("#customAction").value.trim();
+  if (value && !actionOptions.includes(value)) {
+    actionOptions.push(value);
+    $("#customAction").value = "";
+    renderActions();
+  }
+};
+
+$("#statsPhoto").onchange = event => {
+  const file = event.target.files?.[0];
+  $("#statsName").textContent = file ? file.name : "Nenhuma imagem";
+};
+
+ownerSelect.onchange = async () => {
+  const property = properties.find(x => String(x.id) === String(ownerSelect.value));
+  address.value = property?.address || "";
+};
+
+$("#brokerPhoto").onchange = async event => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  status.textContent = "Salvando foto do perfil...";
+
+  try {
+    const blob = await compressImage(file, 2400, .9);
+    await putPhoto(`broker:${brokerId}`, blob);
+    brokerPhotoData = await blobToDataURL(blob);
+    $("#brokerPhotoName").textContent = file.name + " — salva no perfil";
+  } catch (error) {
+    console.error(error);
+    status.textContent = "Erro ao salvar foto";
+    alert("Não foi possível salvar a foto do corretor.");
+  }
+};
+
+$("#saveBroker").onclick = saveBrokerProfile;
+$("#closeBrokerForm").onclick = () => $("#brokerFormPanel").classList.add("hidden");
+$("#addBrokerButton").onclick = () => {
+  resetBrokerForm();
+  $("#brokerFormPanel").classList.remove("hidden");
+  $("#brokerName").focus();
+};
+$("#brokerListButton").onclick = () => {
+  $("#brokerFormPanel").classList.add("hidden");
+  showPage("brokers");
+};
+
+$$("[data-page]").forEach(button => {
+  button.onclick = () => showPage(button.dataset.page);
+});
+
+$("#menuButton").onclick = event => {
+  event.stopPropagation();
+  $("#menuPanel").hidden = !$("#menuPanel").hidden;
+};
+
+$("#menuPanel").onclick = event => {
+  const button = event.target.closest("button");
+  if (!button) return;
+
+  if (button.dataset.action === "properties") showPage("properties");
+  else if (button.dataset.page) showPage(button.dataset.page);
+};
+
+document.addEventListener("click", event => {
+  if (!event.target.closest("#menuPanel") && !event.target.closest("#menuButton")) {
+    $("#menuPanel").hidden = true;
+  }
+});
+
+form.onsubmit = async event => {
+  event.preventDefault();
+  status.textContent = "Gerando PDF...";
+
+  try {
+    const data = await buildData();
+    const response = await fetch("/api/pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) throw new Error(await response.text());
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const owner = (data.owner || "imovel").replace(/[\\/:*?"<>|]/g, "");
+
+    link.href = url;
+    link.download = `FEEDBACK_${owner}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    status.textContent = "PDF pronto ✓";
+  } catch (error) {
+    console.error(error);
+    status.textContent = "Erro ao gerar PDF";
+    alert("Não foi possível gerar o PDF. Confira o perfil e o imóvel selecionado.");
+  }
+};
+
+(async () => {
+  ensureDefaultProfile();
+  await migrateOldProfile();
+
+  if (!profile()) {
+    localStorage.setItem(profileKey(), JSON.stringify(defaultErica));
+  }
+
+  await applyProfile(profile());
+  renderActions();
+  await loadProperties();
+})();
