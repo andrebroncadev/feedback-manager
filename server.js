@@ -56,7 +56,9 @@ app.post("/api/pdf", async (req, res) => {
     const page = await browser.newPage();
     await page.setViewport({ width: 612, height: 792, deviceScaleFactor: 1 });
     await page.goto(`${req.protocol}://${req.get("host")}/preview`, { waitUntil: "domcontentloaded", timeout: 30000 });
-    await page.evaluate(d => window.renderFeedback(d), data);
+    await page.evaluate(d => sessionStorage.setItem("feedbackPreview", JSON.stringify(d)), data);
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 30000 });
+    await page.waitForFunction(() => typeof window.renderFeedback === "function", { timeout: 10000 });
     await page.evaluate(async () => {
       if (document.fonts?.ready) await document.fonts.ready;
       const imgs = [...document.images].filter(img => img.src);
