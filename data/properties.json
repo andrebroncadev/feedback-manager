@@ -3,36 +3,42 @@
     "id": "1",
     "owner": "Maria Eliza e Rubens",
     "address": "191, R. Itapiranga, Barra do Una, São Sebastião - SP",
+    "remaxCode": "",
     "photoUrl": ""
   },
   {
     "id": "2",
     "owner": "Carmita",
-    "address": "",
+    "address": "Rua Ana, 136, Juquehy, São Sebastião, São Paulo",
+    "remaxCode": "11623487",
     "photoUrl": ""
   },
   {
     "id": "3",
     "owner": "Marcelo",
-    "address": "",
+    "address": "Rua Cravinhos, 135, Barra do Una, São Sebastião, São Paulo",
+    "remaxCode": "11624212",
     "photoUrl": ""
   },
   {
     "id": "4",
     "owner": "Luíz",
-    "address": "",
+    "address": "Avenida Magno dos P. Bittencourt, 354, Barra do Una, São Sebastião, São Paulo",
+    "remaxCode": "11624103",
     "photoUrl": ""
   },
   {
     "id": "5",
     "owner": "Milena",
     "address": "",
+    "remaxCode": "",
     "photoUrl": ""
   },
   {
     "id": "6",
     "owner": "Augusto",
     "address": "",
+    "remaxCode": "",
     "photoUrl": ""
   }
 ]
