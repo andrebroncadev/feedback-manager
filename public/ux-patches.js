@@ -53,7 +53,7 @@
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     const nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach(node => { if (node.nodeValue.includes('Feedback Manager')) node.nodeValue = node.nodeValue.replaceAll('Feedback Manager', 'Feedback Maker'); });
+    nodes.forEach(node => { if (node.nodeValue.includes('Feedback Maker')) node.nodeValue = node.nodeValue.replaceAll('Feedback Maker', 'Feedback Maker'); });
   }
 
   const observer = new MutationObserver(() => {
