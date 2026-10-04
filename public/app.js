@@ -488,8 +488,9 @@ $("#brokerListButton").onclick = () => {
   showPage("brokers");
 };
 
-$$("[data-page]").forEach(button => {
-  button.onclick = () => showPage(button.dataset.page);
+$("[data-page]").forEach(button => {
+  button.type = "button";
+  button.onclick = event => { event.preventDefault(); showPage(button.dataset.page); };
 });
 
 $("#menuButton").onclick = event => {
@@ -500,10 +501,12 @@ $("#menuButton").onclick = event => {
 $("#menuPanel").onclick = event => {
   const button = event.target.closest("button");
   if (!button) return;
-
+  event.preventDefault();
   if (button.dataset.action === "properties") showPage("properties");
   else if (button.dataset.page) showPage(button.dataset.page);
 };
+
+$("#previewButton").onclick = openPreview;
 
 document.addEventListener("click", event => {
   if (!event.target.closest("#menuPanel") && !event.target.closest("#menuButton")) {
