@@ -19,11 +19,7 @@ app.post("/api/feedback-data", async (req, res) => {
     if (!allowed.includes(table)) return res.status(400).json({ error: "Tabela não permitida." });
     const url = new URL(`https://ctfmuvtvjvlzjiapyrdh.supabase.co/rest/v1/${table}`);
     if (query) {
-      const parts = String(query).split("&");
-      for (const part of parts) {
-        const eq = part.indexOf("=");
-        if (eq > 0) url.searchParams.append(part.slice(0, eq), part.slice(eq + 1));
-      }
+      for (const [key, value] of new URLSearchParams(String(query))) url.searchParams.set(key, value);
     }
     const headers = {
       apikey: anonKey,
