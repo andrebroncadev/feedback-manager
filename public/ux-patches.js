@@ -8,8 +8,7 @@
       const input = $(id);
       if (!input) return;
       const label = input.closest('label');
-      if (label) label.remove();
-      else input.remove();
+      if (label) label.remove(); else input.remove();
     });
   }
 
@@ -18,17 +17,11 @@
     if (!panel || panel.dataset.modalized === '1') return;
     panel.dataset.modalized = '1';
     panel.classList.add('ux-modal-panel');
-    if (!panel.querySelector('.ux-modal-backdrop')) {
-      const backdrop = document.createElement('div');
-      backdrop.className = 'ux-modal-backdrop';
-      backdrop.addEventListener('click', () => panel.classList.add('hidden'));
-      panel.prepend(backdrop);
-    }
   }
 
   function addPropertySummaryToBrokerCards() {
     const box = $('brokerList');
-    if (!box || !window.brokers) return;
+    if (!box || typeof sb !== 'function') return;
     all('.broker-card').forEach(async card => {
       const button = card.querySelector('[data-broker]');
       if (!button || card.querySelector('.broker-properties')) return;
@@ -44,7 +37,6 @@
           if (btn.dataset.bound) return;
           btn.dataset.bound = '1';
           btn.onclick = async () => {
-            window.brokerId = id;
             localStorage.setItem('feedbackActiveBroker', id);
             await loadProperties();
             if ($('ownerSelect')) $('ownerSelect').value = btn.dataset.openBrokerProperty;
@@ -58,8 +50,10 @@
 
   function renameVisibleProduct() {
     document.title = 'Feedback Maker — RE/MAX';
-    document.body.innerHTML = document.body.innerHTML.replaceAll('Feedback Manager', 'Feedback Maker');
-    all('script').forEach(s => { if (s.src && s.src.includes('app.js')) s.src = s.src; });
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(node => { if (node.nodeValue.includes('Feedback Manager')) node.nodeValue = node.nodeValue.replaceAll('Feedback Manager', 'Feedback Maker'); });
   }
 
   const observer = new MutationObserver(() => {
