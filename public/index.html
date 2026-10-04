@@ -7,27 +7,50 @@
 <body class="manager">
 <main class="manager-shell">
 <header class="topbar">
-  <div><div class="eyebrow">RE/MAX SOUL</div><h1>Relatório de Atividades</h1><p>Preencha os dados. O sistema organiza tudo no modelo oficial.</p></div>
+  <div><div class="eyebrow">RE/MAX SOUL</div><h1>Relatório de Atividades</h1><p id="pageDescription">Perfil do corretor + imóveis vinculados.</p></div>
   <div class="status" id="saveStatus">Pronto</div>
 </header>
 
 <form id="feedbackForm" class="form-grid">
 <section class="panel panel-wide">
-  <div class="panel-head"><div><span class="step">01</span><h2>Identificação</h2></div><span class="hint">Dados que aparecem no relatório</span></div>
+  <div class="panel-head"><div><span class="step">01</span><h2>Perfil do corretor</h2></div><span class="hint">Fica salvo nesta página</span></div>
   <div class="fields">
-    <label>Proprietário / destinatário<select id="ownerSelect" required></select></label>
-    <label>Endereço do imóvel<input id="address" required placeholder="Endereço completo"></label>
-    <label>Data<input id="date" type="date" required></label>
-    <label>Nome do corretor<input id="brokerName" value="Erica Bronca"></label>
+    <label>Nome do corretor<input id="brokerName" value="Erica Bronca" required></label>
     <label>Telefone<input id="brokerPhone" value="(12) 98123-5534"></label>
     <label>E-mail<input id="brokerEmail" value="ericabronca@remax.com.br"></label>
     <label>CRECI<input id="creci" value="CRECI 199167"></label>
     <label class="span-2">Endereço do escritório<input id="office" value="324 Rua Claudio Izidoro do Espírito Santo, Juquehy — São Sebastião"></label>
+    <label class="upload span-2">Foto do corretor<input id="brokerPhoto" type="file" accept="image/*"><span id="brokerPhotoName">Nenhuma foto</span></label>
+  </div>
+  <div class="profile-actions">
+    <button type="button" class="secondary" id="saveBroker">Salvar perfil</button>
+    <span class="hint" id="profileStatus">Perfil carregado</span>
+  </div>
+</section>
+
+<section class="panel panel-wide">
+  <div class="panel-head"><div><span class="step">02</span><h2>Imóvel / proprietário</h2></div><span class="hint">Cada proprietário pertence a um imóvel deste corretor</span></div>
+  <div class="fields">
+    <label>Proprietário / destinatário<select id="ownerSelect" required></select></label>
+    <label>Endereço do imóvel<input id="address" required placeholder="Endereço completo"></label>
+    <label>Código do anúncio RE/MAX<input id="remaxCode" placeholder="Ex.: 11623487"></label>
+    <label>Data<input id="date" type="date" required></label>
+  </div>
+  <div class="property-add">
+    <details>
+      <summary>Adicionar proprietário / imóvel</summary>
+      <div class="fields">
+        <label>Nome do proprietário<input id="newOwner" placeholder="Ex.: João e Maria"></label>
+        <label>Endereço<input id="newAddress" placeholder="Rua, número, bairro... "></label>
+        <label>Código RE/MAX<input id="newCode" placeholder="Código do anúncio"></label>
+        <div class="profile-actions"><button type="button" class="secondary" id="addProperty">Adicionar imóvel</button></div>
+      </div>
+    </details>
   </div>
 </section>
 
 <section class="panel">
-  <div class="panel-head"><div><span class="step">02</span><h2>Indicadores</h2></div><span class="hint">Números da semana</span></div>
+  <div class="panel-head"><div><span class="step">03</span><h2>Indicadores</h2></div><span class="hint">Números da semana</span></div>
   <div class="fields three">
     <label>Visualizações online<input id="views" type="number" min="0"></label>
     <label>Acessos no anúncio<input id="accesses" type="number" min="0"></label>
@@ -39,7 +62,7 @@
 </section>
 
 <section class="panel">
-  <div class="panel-head"><div><span class="step">03</span><h2>Textos</h2></div><span class="hint">Você controla o conteúdo</span></div>
+  <div class="panel-head"><div><span class="step">04</span><h2>Textos</h2></div><span class="hint">Você controla o conteúdo</span></div>
   <div class="fields">
     <label class="span-2">Texto da página 2<textarea id="message1" rows="5" placeholder="Texto que aparece após “Prezados...”"></textarea></label>
     <label class="span-2">Texto complementar da página 3<textarea id="message2" rows="5" placeholder="Contexto e análise da semana..."></textarea></label>
@@ -48,16 +71,15 @@
 </section>
 
 <section class="panel">
-  <div class="panel-head"><div><span class="step">04</span><h2>Ações de marketing</h2></div><span class="hint">Marque o que foi feito e o que vem a seguir</span></div>
+  <div class="panel-head"><div><span class="step">05</span><h2>Ações de marketing</h2></div><span class="hint">Marque o que foi feito e o que vem a seguir</span></div>
   <div id="actions" class="actions-editor"></div>
   <div class="add-action"><input id="customAction" placeholder="Adicionar uma ação..."><button type="button" id="addAction">Adicionar</button></div>
 </section>
 
 <section class="panel">
-  <div class="panel-head"><div><span class="step">05</span><h2>Imagens</h2></div><span class="hint">Arraste ou selecione</span></div>
+  <div class="panel-head"><div><span class="step">06</span><h2>Imagens do relatório</h2></div><span class="hint">A foto do imóvel e a estatística são desta emissão</span></div>
   <div class="upload-grid">
     <label class="upload">Foto do imóvel<input id="propertyPhoto" type="file" accept="image/*"><span id="propertyName">Nenhuma foto</span></label>
-    <label class="upload">Foto do corretor<input id="brokerPhoto" type="file" accept="image/*"><span id="brokerPhotoName">Nenhuma foto</span></label>
     <label class="upload span-2">Imagem das estatísticas<input id="statsPhoto" type="file" accept="image/*"><span id="statsName">Nenhuma imagem</span></label>
   </div>
 </section>
