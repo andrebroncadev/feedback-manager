@@ -40,9 +40,28 @@ function today() { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTime
 function formatNumber(value) { return Number(value || 0).toLocaleString("pt-BR"); }
 
 async function sb(table, options = {}) {
-  const response = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ table, ...options }) });
-  if (!response.ok) { const text = await response.text(); throw new Error(`${table}: ${text || response.status}`); }
-  const text = await response.text(); return text ? JSON.parse(text) : [];
+  let response;
+  try {
+    response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({ table, ...options })
+    });
+  } catch (error) {
+    throw new Error(`Não foi possível conectar ao servidor do Feedback Maker (${table}). Verifique a conexão e tente novamente. Detalhe: ${error?.message || error}`);
+  }
+  const text = await response.text();
+  let payload;
+  try { payload = text ? JSON.parse(text) : []; }
+  catch { payload = { error: text || "Resposta vazia ou inválida do servidor." }; }
+  if (!response.ok) {
+    const detail = typeof payload === "object" ? (payload.message || payload.error || JSON.stringify(payload)) : String(payload);
+    throw new Error(`Falha ao consultar ${table} (HTTP ${response.status}): ${detail}`);
+  }
+  if (payload && !Array.isArray(payload) && payload.error) {
+    throw new Error(`Falha ao consultar ${table}: ${payload.error}`);
+  }
+  return payload;
 }
 
 async function loadBrokers() {
@@ -147,4 +166,18 @@ ownerSelect.addEventListener("change",updateOwnerFields);$("views").addEventList
 $("brokerPhoto").addEventListener("change",async event=>{const file=event.target.files?.[0];if(!file)return;brokerPhotoData=await fileToDataURL(file,1600,.9);$("brokerPhotoName").textContent=`${file.name} — preparada`});
 $("saveBroker").addEventListener("click",saveBrokerProfile);$("closeBrokerForm").addEventListener("click",()=>$("brokerFormPanel").classList.add("hidden"));$("addBrokerButton").addEventListener("click",()=>openBrokerForm());$("brokerListButton").addEventListener("click",()=>{$("brokerFormPanel").classList.add("hidden");renderBrokerList()});$("previewButton").addEventListener("click",openPreview);$("downloadButton").addEventListener("click",()=>generatePDF({preventDefault(){}}));
 
-(async function init(){try{await loadBrokers();await applyBroker(currentBroker());renderActions();await loadProperties();updateLiveTotals();setupNavigation()}catch(error){console.error(error);status.textContent="Erro ao carregar base";alert("Não foi possível carregar a base de corretores e imóveis.")}})();
+(async function init(){
+  try {
+    await loadBrokers();
+    await applyBroker(currentBroker());
+    renderActions();
+    await loadProperties();
+    updateLiveTotals();
+    setupNavigation();
+    status.textContent = `${brokers.length} corretor(es) e ${properties.length} imóvel(is) carregados ✓`;
+  } catch (error) {
+    console.error("Falha ao carregar a base do Feedback Maker:", error);
+    status.textContent = "Erro ao carregar base";
+    alert(`Não foi possível carregar a base de corretores e imóveis.\\n\\n${error?.message || "Erro desconhecido"}`);
+  }
+})();
