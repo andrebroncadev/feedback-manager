@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "server.js": {
+      "includeFiles": [
+        "public/**",
+        "data/**"
+      ]
+    }
+  }
+}
