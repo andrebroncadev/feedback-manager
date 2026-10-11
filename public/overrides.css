@@ -18,3 +18,41 @@
 .char-counter{display:block!important;text-align:right;font-size:10px!important;font-weight:500!important;color:#8a949f!important;margin-top:-3px}.char-counter.near-limit{color:#b01d2a!important;font-weight:800!important}
 .property-crud-fields{grid-template-columns:1fr 1fr}.property-crud-fields label{min-width:0}
 #propertyFormPanel:not(.hidden){display:block!important}
+
+
+/* Sistema visual unificado: off-white, cinzas, dourado e cores funcionais */
+:root{color-scheme:light;--theme-bg:#f6f5f1;--theme-surface:#fffefa;--theme-surface-2:#e9e8e5;--theme-surface-3:#d5d4d0;--theme-text:#28292d;--theme-muted:#6f7075;--theme-line:#d8d6d0;--theme-gold:#b49350;--theme-red:#b52332;--theme-navy:#17324f;--theme-green:#26734d}
+html[data-theme="dark"]{color-scheme:dark;--theme-bg:#222326;--theme-surface:#2d2f33;--theme-surface-2:#383a3f;--theme-surface-3:#484a4f;--theme-text:#f4f1e8;--theme-muted:#b8b5ad;--theme-line:#4b4c50;--theme-gold:#d2b46b;--theme-red:#d94a57;--theme-navy:#294b6d;--theme-green:#3b9a68}
+.theme-toggle{position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--theme-line);border-radius:999px;padding:9px 13px;background:var(--theme-surface);color:var(--theme-text);font:600 12px/1.2 system-ui,sans-serif;box-shadow:0 3px 14px #00000016;opacity:.82;cursor:pointer;transition:opacity .15s,transform .15s}
+.theme-toggle:hover,.theme-toggle:focus-visible{opacity:1;transform:translateY(-1px);outline:2px solid var(--theme-gold);outline-offset:2px}
+@media(max-width:600px){.theme-toggle{right:10px;bottom:10px;padding:8px 11px;font-size:11px}}
+@media print{.theme-toggle{display:none!important}}
+
+
+/* Tema unificado Feedback Maker */
+body.manager{background:var(--theme-bg);color:var(--theme-text)}
+.navbar{background:var(--theme-surface);border-color:var(--theme-line);color:var(--theme-text)}
+.brand-mark{color:var(--theme-navy)}.brand-name,.nav-context{color:var(--theme-muted)}
+.nav-links button,.menu-button{background:var(--theme-surface-2);color:var(--theme-text);border-color:var(--theme-line)}
+.nav-links button:hover,.menu-button:hover{background:var(--theme-surface-3)}
+.menu-panel,.panel,.status,.broker-card,.property-card,.property-form-panel,.ux-modal-panel,.accumulated-preview>div{background:var(--theme-surface);border-color:var(--theme-line);color:var(--theme-text)}
+.hero h1,.panel h2,.property-card-body b{color:var(--theme-navy)}
+.hero p,.hint,.manager-toolbar p,.property-card-body span,.property-card-body small{color:var(--theme-muted)}
+.eyebrow{color:var(--theme-red)}
+button.primary,.primary-button,.btn-primary{background:var(--theme-navy);color:#fff;border-color:var(--theme-navy)}
+button.primary:hover,.primary-button:hover,.btn-primary:hover{background:var(--theme-red);border-color:var(--theme-red)}
+button.success,.success-button,.whatsapp-button{background:var(--theme-green);color:#fff}
+button.danger,.danger-button{background:var(--theme-surface);color:var(--theme-red);border-color:var(--theme-red)}
+input,select,textarea{background:var(--theme-surface);color:var(--theme-text);border-color:var(--theme-line)}
+input::placeholder,textarea::placeholder{color:var(--theme-muted)}
+html[data-theme="dark"] body.manager{background:var(--theme-bg);color:var(--theme-text)}
+html[data-theme="dark"] .navbar,html[data-theme="dark"] .menu-panel,html[data-theme="dark"] .panel,html[data-theme="dark"] .status,html[data-theme="dark"] .broker-card,html[data-theme="dark"] .property-card,html[data-theme="dark"] .property-form-panel,html[data-theme="dark"] .ux-modal-panel,html[data-theme="dark"] .accumulated-preview>div{background:var(--theme-surface);border-color:var(--theme-line);color:var(--theme-text)}
+html[data-theme="dark"] .nav-links button,html[data-theme="dark"] .menu-button{background:var(--theme-surface-2);color:var(--theme-text);border-color:var(--theme-line)}
+html[data-theme="dark"] .hero h1,html[data-theme="dark"] .panel h2,html[data-theme="dark"] .property-card-body b{color:var(--theme-text)}
+html[data-theme="dark"] .hero p,html[data-theme="dark"] .hint,html[data-theme="dark"] .manager-toolbar p,html[data-theme="dark"] .property-card-body span,html[data-theme="dark"] .property-card-body small{color:var(--theme-muted)}
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{background:#25272a;color:var(--theme-text);border-color:var(--theme-line)}
+html[data-theme="dark"] .danger-button{background:var(--theme-surface);color:#ff8d96;border-color:var(--theme-red)}
+/* A prévia do relatório continua em papel claro; o tema altera a área de navegação, não o PDF. */
+.preview-body{background:var(--theme-bg)!important;color:var(--theme-text)}
+.preview-toolbar{background:var(--theme-surface)!important;border-color:var(--theme-line)!important}
+
