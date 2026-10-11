@@ -12,13 +12,37 @@ const __dirname = path.dirname(__filename);
 const publicDir = path.join(__dirname, "public");
 const dataDir = path.join(__dirname, "data");
 
+const AUTH_URL = "https://vqenzubwfzwwndgjucim.supabase.co";
+const AUTH_PUBLISHABLE_KEY = "sb_publishable_s4o-wW-rdUbEesSKe6NhNg_u7gzYeCf";
+const AUTHORIZED_EMAIL = "andrebronca60@gmail.com";
+
+async function requireAuthorized(req, res, next) {
+  const token = /^Bearer\s+(.+)$/i.exec(req.headers.authorization || "")?.[1];
+  if (!token) return res.status(401).json({ error: "Entre na ferramenta para continuar." });
+  try {
+    const response = await fetch(`${AUTH_URL}/auth/v1/user`, {
+      headers: { apikey: AUTH_PUBLISHABLE_KEY, Authorization: `Bearer ${token}` }
+    });
+    if (!response.ok) return res.status(401).json({ error: "Sessão inválida ou expirada. Entre novamente." });
+    const user = await response.json();
+    if (String(user.email || "").toLowerCase() !== AUTHORIZED_EMAIL) {
+      return res.status(403).json({ error: "Esta conta não tem permissão para acessar o Feedback Maker." });
+    }
+    req.authUser = user;
+    return next();
+  } catch (error) {
+    console.error("AUTH ERROR:", error);
+    return res.status(503).json({ error: "Não foi possível validar a sessão. Tente novamente." });
+  }
+}
+
 app.use(express.json({ limit: "60mb" }));
 app.use(express.static(publicDir));
 app.use("/data", express.static(dataDir));
 app.get("/", (_req, res) => res.sendFile(path.join(publicDir, "index.html")));
 app.get("/preview", (_req, res) => res.sendFile(path.join(publicDir, "preview.html")));
 
-app.post("/api/feedback-data", async (req, res) => {
+app.post("/api/feedback-data", requireAuthorized, async (req, res) => {
   try {
     const anonKey = [101,121,74,104,98,71,99,105,79,105,74,73,85,122,73,49,78,105,73,115,73,110,82,53,99,67,73,54,73,107,112,88,86,67,74,57,46,101,121,74,112,99,51,77,105,79,105,74,122,100,88,66,104,89,109,70,122,90,83,73,115,73,110,74,108,90,105,73,54,73,109,78,48,90,109,49,49,100,110,82,50,97,110,90,115,101,109,112,112,89,88,66,53,99,109,82,111,73,105,119,105,99,109,57,115,90,83,73,54,73,109,70,117,98,50,52,105,76,67,74,112,89,88,81,105,79,106,69,51,79,84,65,52,78,106,89,121,78,84,99,115,73,109,86,52,99,67,73,54,77,106,69,119,78,106,81,48,77,106,73,49,78,51,48,46,101,66,80,102,106,103,100,67,121,55,117,49,56,122,103,99,118,119,110,109,110,105,57,50,79,85,114,74,117,77,68,120,81,88,70,77,72,86,45,52,117,85,81].map(n => String.fromCharCode(n)).join("");
     const { table, query = "", method = "GET", body } = req.body || {};
@@ -53,7 +77,7 @@ function ensureChrome() {
   return installed;
 }
 
-app.post("/api/pdf", async (req, res) => {
+app.post("/api/pdf", requireAuthorized, async (req, res) => {
   const data = req.body;
   if (!data || typeof data !== "object") return res.status(400).json({ error: "Dados inválidos." });
   let browser;
