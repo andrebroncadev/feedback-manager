@@ -40,9 +40,10 @@
   });
   client.auth.onAuthStateChange((event, session) => {
     if (session && acceptSession(session)) return;
+    const wasAuthenticated = document.body.classList.contains("authenticated");
     window.feedbackSession = null;
     document.body.classList.remove("authenticated");
-    if (event === "SIGNED_OUT") window.location.reload();
+    if (event === "SIGNED_OUT" && wasAuthenticated) window.location.reload();
   });
 
   form?.addEventListener("submit", async event => {
