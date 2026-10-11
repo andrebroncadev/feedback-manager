@@ -38,13 +38,14 @@ let actionOptions = [...DEFAULT_ACTIONS];
 function esc(value) { return String(value ?? "").replace(/[&<>\"]/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[char])); }
 function today() { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); }
 function formatNumber(value) { return Number(value || 0).toLocaleString("pt-BR"); }
+function authHeaders() { const token = window.feedbackSession?.access_token; if (!token) throw new Error("Entre no Feedback Maker para continuar."); return { Authorization: `Bearer ${token}` }; }
 
 async function sb(table, options = {}) {
   let response;
   try {
     response = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      headers: { "Content-Type": "application/json", "Accept": "application/json", ...authHeaders() },
       body: JSON.stringify({ table, ...options })
     });
   } catch (error) {
@@ -156,7 +157,7 @@ async function saveWeeklyFeedback(data){
 }
 async function buildData(){const data=await collectData(),statsFile=$("statsPhoto").files?.[0];if(statsFile){statsPhotoData=await fileToDataURL(statsFile,3000,.9);data.statsPhoto=statsPhotoData}return data}
 async function openPreview(){try{const data=await buildData();sessionStorage.setItem("feedbackPreview",JSON.stringify(data));window.open("/preview","_blank")}catch(error){console.error(error);alert(error.message||"Não foi possível abrir a visualização.")}}
-async function generatePDF(event){event.preventDefault();status.textContent="Gerando PDF...";try{const data=await buildData(),response=await fetch("/api/pdf",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});if(!response.ok)throw new Error(await response.text());const blob=await response.blob(),url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download=`FEEDBACK_${(data.owner||"imovel").replace(/[\\/:*?\"<>|]/g,"")}.pdf`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);await saveWeeklyFeedback(data);status.textContent="PDF pronto ✓"}catch(error){console.error(error);status.textContent="Erro ao gerar PDF";alert(error.message||"Não foi possível gerar o PDF.")}}
+async function generatePDF(event){event.preventDefault();status.textContent="Gerando PDF...";try{const data=await buildData(),response=await fetch("/api/pdf",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify(data)});if(!response.ok)throw new Error(await response.text());const blob=await response.blob(),url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download=`FEEDBACK_${(data.owner||"imovel").replace(/[\\/:*?\"<>|]/g,"")}.pdf`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);await saveWeeklyFeedback(data);status.textContent="PDF pronto ✓"}catch(error){console.error(error);status.textContent="Erro ao gerar PDF";alert(error.message||"Não foi possível gerar o PDF.")}}
 
 function setupNavigation(){const menuButton=$("menuButton"),menuPanel=$("menuPanel");if(menuButton&&menuPanel)menuButton.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();menuPanel.hidden=!menuPanel.hidden});all("[data-page]").forEach(button=>{button.type="button";button.addEventListener("click",event=>{event.preventDefault();showPage(button.dataset.page)})});document.addEventListener("click",event=>{const menu=$("menuPanel");if(menu&&!event.target.closest("#menuPanel")&&!event.target.closest("#menuButton"))menu.hidden=true})}
 function setupCounters(){all(".char-counter").forEach(counter=>{const input=$(counter.dataset.for);if(!input)return;const update=()=>{counter.textContent=`${input.value.length}/${input.maxLength}`;counter.classList.toggle("near-limit",input.value.length>=input.maxLength*0.85)};input.addEventListener("input",update);update()})} setupCounters();
@@ -168,6 +169,7 @@ $("saveBroker").addEventListener("click",saveBrokerProfile);$("closeBrokerForm")
 
 (async function init(){
   try {
+    await window.feedbackAuthReady;
     await loadBrokers();
     await applyBroker(currentBroker());
     renderActions();
