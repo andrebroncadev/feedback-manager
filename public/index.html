@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="theme-color" content="#f6f5f1"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Feedback Maker — RE/MAX</title>
-<link rel="stylesheet" href="/styles.css?v=20261004-4"><link rel="stylesheet" href="/overrides.css?v=20261004-2">
+<link rel="stylesheet" href="/styles.css?v=20261004-4"><link rel="stylesheet" href="/overrides.css?v=20261010-theme">
 </head>
 <body class="manager">
 <nav class="navbar">
@@ -29,4 +29,5 @@
 <section class="app-page hidden" id="pageProperties"><header class="hero"><div><div class="eyebrow">IMÓVEIS</div><h1>Imóveis de <span id="propertyPageBroker">corretor</span></h1><p>Cadastre o imóvel, o proprietário, endereço e foto. O imóvel fica vinculado ao corretor atual.</p></div></header><div class="panel" id="propertyManager"></div></section>
 </main>
 <script src="/app.js?v=20261004-4"></script>
+<script>(function(){const key='remax-unified-theme',root=document.documentElement;let saved='light';try{saved=localStorage.getItem(key)||'light'}catch(e){}const b=document.createElement('button');b.type='button';b.id='themeToggle';b.className='theme-toggle';b.title='Alternar entre modo claro e escuro';function apply(t){root.dataset.theme=t;b.textContent=t==='dark'?'☀ Modo claro':'☾ Modo escuro';b.setAttribute('aria-pressed',String(t==='dark'));b.setAttribute('aria-label',t==='dark'?'Ativar modo claro':'Ativar modo escuro');const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='dark'?'#222326':'#f6f5f1'}b.addEventListener('click',()=>{const t=root.dataset.theme==='dark'?'light':'dark';apply(t);try{localStorage.setItem(key,t)}catch(e){}});apply(saved);const place=document.querySelector('.preview-toolbar')||document.body;if(place)place.appendChild(b);else document.addEventListener('DOMContentLoaded',()=>{(document.querySelector('.preview-toolbar')||document.body).appendChild(b)},{once:true})})();</script>
 </body></html>
