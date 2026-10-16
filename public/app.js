@@ -86,6 +86,44 @@ function renderProperties(selectedId = null) {
   updateOwnerFields();
 }
 function updateOwnerFields() { address.value = currentProperty()?.endereco || ""; updateLiveTotals(); }
+
+function applyPierreDraft() {
+  const property = currentProperty();
+  if (String(property?.proprietario_nome || "").trim().toLowerCase() !== "pierre") return;
+
+  const done = [
+    "Produção de vídeo para divulgação no Instagram",
+    "Realização de sessão fotográfica profissional",
+    "Produção de vídeo tour e imagens aéreas com drone",
+    "Manutenção da divulgação nas plataformas imobiliárias",
+    "Divulgação nas redes sociais",
+    "Divulgação no grupo interno de especialistas RE/MAX",
+    "Show de Captações",
+    "Prospecção de investidores / construtores",
+    "Tráfego pago direcionado a cidades paulistas de maior renda per capita",
+    "Monitoramento dos indicadores de desempenho"
+  ];
+  const todo = [
+    "Instalação da placa de divulgação no imóvel",
+    "Finalização e publicação do anúncio nos canais de divulgação",
+    "Disponibilização do material de apresentação para corretores parceiros da RE/MAX e profissionais de outras redes",
+    "Review estratégico do anúncio: foto de capa, título, descrição e apresentação do terreno"
+  ];
+  for (const action of [...done, ...todo]) if (!actionOptions.includes(action)) actionOptions.push(action);
+
+  $("views").value = "0";
+  $("virtualVisits").value = "0";
+  $("message1").value = "Seja muito bem-vindo a esta nova etapa conosco! É um prazer iniciar o trabalho de divulgação e gestão do seu imóvel. Nosso objetivo é apresentar a propriedade da melhor forma possível, conectando-a a potenciais interessados e trabalhando para alcançar um excelente resultado.";
+  $("message2").value = "O vídeo publicado no Instagram ultrapassou 5,5 mil visualizações, ampliando a exposição do imóvel. As estatísticas específicas de visualizações e acessos ao anúncio imobiliário ainda não estão disponíveis; por isso, as visualizações do vídeo não foram somadas aos indicadores do anúncio.";
+  $("message3").value = "A próxima etapa é revisar estrategicamente a foto de capa, o título, a descrição e a apresentação do terreno, destacando primeiro o valor e o potencial da área antes de qualquer sugestão de ajuste. Também vamos instalar a placa, concluir a publicação nos canais e disponibilizar o material para corretores parceiros da RE/MAX e de outras redes.";
+  renderActions(done, todo);
+  all(".char-counter").forEach(counter => {
+    const input = $(counter.dataset.for);
+    if (input) counter.textContent = `${input.value.length}/${input.maxLength}`;
+  });
+  updateLiveTotals();
+  status.textContent = "Dados do feedback do Pierre carregados — revise antes de gerar o PDF.";
+}
 function updateLiveTotals() {
   const p=currentProperty(), baseViews=Number(p?.acumulado_visualizacoes||0), baseVirtual=Number(p?.acumulado_visitas_virtuais||0), views=Number($("views").value||0), virtual=Number($("virtualVisits").value||0);
   $("liveTotalViews").textContent=formatNumber(baseViews+views); $("liveTotalVirtual").textContent=formatNumber(baseVirtual+virtual);
@@ -163,7 +201,7 @@ function setupNavigation(){const menuButton=$("menuButton"),menuPanel=$("menuPan
 function setupCounters(){all(".char-counter").forEach(counter=>{const input=$(counter.dataset.for);if(!input)return;const update=()=>{counter.textContent=`${input.value.length}/${input.maxLength}`;counter.classList.toggle("near-limit",input.value.length>=input.maxLength*0.85)};input.addEventListener("input",update);update()})} setupCounters();
 $("addAction").addEventListener("click",event=>{event.preventDefault();const value=$("customAction").value.trim();if(value&&!actionOptions.includes(value))actionOptions.push(value);$("customAction").value="";renderActions();setupCounters()});
 $("statsPhoto").addEventListener("change",async event=>{const file=event.target.files?.[0];if(!file)return;statsPhotoData=await fileToDataURL(file,3000,.9);$("statsName").textContent=`${file.name} — preparada`});
-ownerSelect.addEventListener("change",updateOwnerFields);$("views").addEventListener("input",updateLiveTotals);$("virtualVisits").addEventListener("input",updateLiveTotals);
+ownerSelect.addEventListener("change",()=>{updateOwnerFields();applyPierreDraft()});$("views").addEventListener("input",updateLiveTotals);$("virtualVisits").addEventListener("input",updateLiveTotals);
 $("brokerPhoto").addEventListener("change",async event=>{const file=event.target.files?.[0];if(!file)return;brokerPhotoData=await fileToDataURL(file,1600,.9);$("brokerPhotoName").textContent=`${file.name} — preparada`});
 $("saveBroker").addEventListener("click",saveBrokerProfile);$("closeBrokerForm").addEventListener("click",()=>$("brokerFormPanel").classList.add("hidden"));$("addBrokerButton").addEventListener("click",()=>openBrokerForm());$("brokerListButton").addEventListener("click",()=>{$("brokerFormPanel").classList.add("hidden");renderBrokerList()});$("previewButton").addEventListener("click",openPreview);$("downloadButton").addEventListener("click",()=>generatePDF({preventDefault(){}}));
 
