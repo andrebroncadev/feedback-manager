@@ -111,9 +111,10 @@ function applyPierreDraft() {
   if (String(property?.proprietario_nome || "").trim().toLowerCase() !== "pierre") return;
 
   const done = [
-    "Produção de vídeo para divulgação no Instagram",
-    "Realização de sessão fotográfica profissional",
-    "Produção de vídeo tour e imagens aéreas com drone",
+    "Vídeo de apresentação",
+    "Fotografia profissional",
+    "Tour virtual / visita virtual",
+    "Imagens aéreas com drone",
     "Manutenção dos anúncios nas plataformas imobiliárias",
     "Divulgação nas redes sociais",
     "Divulgação no grupo interno de especialistas RE/MAX",
@@ -129,9 +130,6 @@ function applyPierreDraft() {
     "Revisão estratégica do anúncio"
   ];
   for (const action of [...done, ...todo]) if (!actionOptions.includes(action)) actionOptions.push(action);
-  ACTION_DESCRIPTIONS["Produção de vídeo para divulgação no Instagram"]="Vídeo produzido para apresentar o imóvel ao público das redes sociais.";
-  ACTION_DESCRIPTIONS["Realização de sessão fotográfica profissional"]="Sessão de fotos profissionais realizada para valorizar a apresentação do imóvel.";
-  ACTION_DESCRIPTIONS["Produção de vídeo tour e imagens aéreas com drone"]="Material audiovisual de apresentação e imagens aéreas produzidos.";
   ACTION_DESCRIPTIONS["Prospecção de investidores e construtores"]="Contato direcionado a investidores e construtores potencialmente compatíveis.";
 
   $("views").value = "0";
