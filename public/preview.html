@@ -4,15 +4,28 @@
 <meta charset="UTF-8"><meta name="theme-color" content="#f6f5f1"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Feedback Maker — RE/MAX</title>
 <link rel="stylesheet" href="/styles.css?v=20261004-4"><link rel="stylesheet" href="/overrides.css?v=20261010-theme">
 <style>
-.marketing-continuation .continuation-heading{position:absolute;left:58pt;right:58pt;top:54pt;font-size:17pt;font-weight:700;color:#1d3d70;padding-bottom:12pt;border-bottom:2pt solid #dc1c2e}
-.marketing-continuation .continuation-lists{position:absolute;left:58pt;right:58pt;top:104pt;max-height:485pt;overflow:hidden}
-.marketing-continuation .continuation-lists h3{font-size:13pt;margin:0 0 12pt;color:#1d3d70}
-.marketing-continuation .continuation-lists ul{list-style:none;padding:0;margin:0 0 18pt}
-.marketing-continuation .continuation-lists li{position:relative;padding-left:16pt;margin:0 0 12pt;font-size:10.5pt;line-height:1.3;overflow-wrap:anywhere}
-.marketing-continuation .continuation-lists li:before{content:"•";position:absolute;left:0;top:0}
-.marketing-continuation .continuation-analysis{position:absolute;left:42pt;right:42pt;top:610pt;text-align:center;font-size:10.5pt;line-height:1.35;overflow-wrap:anywhere}
-.marketing-continuation .continuation-analysis h3{font-size:13pt;margin-bottom:10pt;color:#1d3d70}
+/* Fluxo adaptável da página de marketing e páginas extras apenas quando necessário */
+.marketing-continuation .continuation-content{position:absolute;left:58pt;right:58pt;top:48pt;bottom:48pt;display:flex;flex-direction:column;justify-content:center;gap:25pt;overflow:hidden}
+.marketing-continuation .continuation-group{min-width:0}
+.marketing-continuation .continuation-group h3{font-size:13pt;margin:0 0 12pt;color:#1d3d70}
+.marketing-continuation .continuation-group ul{list-style:none;padding:0;margin:0}
+.marketing-continuation .continuation-group li{position:relative;padding-left:16pt;margin:0 0 10pt;font-size:10.5pt;line-height:1.25;overflow-wrap:anywhere}
+.marketing-continuation .continuation-group li:before{content:"•";position:absolute;left:0;top:0}
+.marketing-continuation .action-explanation{display:block;margin-top:3pt;font-size:8.5pt;line-height:1.25;color:#777;font-weight:400}
+.marketing-continuation .continuation-analysis{font-size:10.5pt;line-height:1.35;text-align:center;color:#111;overflow-wrap:anywhere}
 .marketing-continuation .continuation-analysis p{margin:0}
+.page3-content{position:absolute;left:58pt;right:58pt;top:72pt;bottom:40pt;display:flex;flex-direction:column;gap:20pt;overflow:hidden}
+.page3-content .top-note,.page3-content .marketing,.page3-content .analysis{position:static;left:auto;right:auto;top:auto;margin:0;width:auto;flex:none;color:#111}
+.page3-content .top-note{font-size:10.5pt;line-height:1.3;text-align:center;overflow-wrap:anywhere}
+.page3-content .marketing h2{font-size:17pt;margin:0 0 15pt;color:#111}
+.page3-content .marketing li{margin:0 0 10pt;line-height:1.2}
+.page3-content .marketing li .action-name{display:block;color:#111}
+.page3-content .action-explanation{display:block;margin-top:3pt;font-size:8.5pt;line-height:1.25;color:#777;font-weight:400}
+.page3-content .todo-block{margin-top:18pt}
+.page3-content .todo-block h3{font-size:13pt;margin:0 0 10pt;color:#111}
+.page3-content .analysis{font-size:10.5pt;line-height:1.35;text-align:center;color:#111;overflow-wrap:anywhere}
+.page3-content .analysis p{margin:0}
+.msg1{color:#111!important}
 </style></head>
 <body class="preview-body"><main id="report">
 <section class="pagina capa" id="pag1"><div class="capa-title">Relatório de Atividades do<br>Imóvel</div><div class="capa-art" aria-hidden="true"><div class="capa-house"><div class="capa-roof"></div><div class="capa-body"><div class="capa-door"></div><div class="capa-window"></div></div></div><div class="capa-tree capa-tree-left"></div><div class="capa-tree capa-tree-right"></div><div class="clipboard"><div class="clip-top"></div><i></i><i></i><i></i></div><div class="ground"></div></div><header class="capa-footer"><div class="capa-contact"><b id="p1_nome"></b><span id="p1_tel"></span><span id="p1_email"></span></div><img class="company-logo real-logo" src="/logoSemtexto.svg" alt="RE/MAX Soul"></header></section>
@@ -22,13 +35,17 @@
 </main>
 
 <script>
-function fmtDate(v){if(!v)return "";const [y,m,d]=v.split("-");return d+"/"+m+"/"+y}function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v??""}function esc(s){return String(s||"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}function list(id,items){document.getElementById(id).innerHTML=(items||[]).map(x=>`<li>${esc(x)}</li>`).join("")}function image(id,src,placeholder){const img=document.getElementById(id),p=placeholder&&document.getElementById(placeholder);if(src){img.src=src;img.style.display="block";if(p)p.style.display="none"}}
+function fmtDate(v){if(!v)return "";const [y,m,d]=v.split("-");return d+"/"+m+"/"+y}
+function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v??""}
+function esc(s){return String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function image(id,src,placeholder){const img=document.getElementById(id),p=placeholder&&document.getElementById(placeholder);if(src){img.src=src;img.style.display="block";if(p)p.style.display="none"}}
 function layoutPage2(){const msg=document.getElementById("p2_msg1"),photo=document.querySelector(".photo-metrics"),summary=document.querySelector(".summary");if(!msg||!photo||!summary)return;const content=document.querySelector(".pag2-content");const contentTop=content.getBoundingClientRect().top;const msgBottom=msg.getBoundingClientRect().bottom;const photoTop=Math.max(205,msgBottom-contentTop+18);photo.style.top=Math.min(photoTop,340)+"pt";const photoHeight=205;const summaryTop=Math.min(Math.max(472,photoTop+photoHeight+28),570);summary.style.top=summaryTop+"pt"}
-function addMarketingContinuation(doneItems,todoItems,analysisText,index,total){
+function renderActionList(id,items,descriptions){const el=document.getElementById(id);el.innerHTML=(items||[]).map(action=>{const desc=descriptions[action]||"Ação de divulgação registrada no plano de marketing do imóvel.";return '<li data-action="'+esc(action)+'"><span class="action-name">'+esc(action)+'</span><small class="action-explanation">'+esc(desc)+'</small></li>'}).join("")}
+function addMarketingContinuation(doneItems,todoItems,analysisText,descriptions){
  const page=document.createElement("section");page.className="pagina marketing-continuation";
- const doneHtml=doneItems.length?'<h3>Ações realizadas</h3><ul>'+doneItems.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul>':"";
- const todoHtml=todoItems.length?'<div class="todo-block"><h3>Próximas ações</h3><ul>'+todoItems.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul></div>':"";
- page.innerHTML='<div class="continuation-heading">Continuação das ações de marketing</div><div class="continuation-lists">'+doneHtml+todoHtml+'</div>'+(analysisText?'<div class="continuation-analysis"><h3>Análise complementar</h3><p>'+esc(analysisText)+'</p></div>':"");
+ const doneHtml=doneItems.length?'<div class="continuation-group"><h3>Ações realizadas</h3><ul>'+doneItems.map(action=>'<li><span>'+esc(action)+'</span><small class="action-explanation">'+esc(descriptions[action]||"Ação de divulgação registrada no plano de marketing do imóvel.")+'</small></li>').join("")+'</ul></div>':"";
+ const todoHtml=todoItems.length?'<div class="continuation-group"><h3>Próximas ações</h3><ul>'+todoItems.map(action=>'<li><span>'+esc(action)+'</span><small class="action-explanation">'+esc(descriptions[action]||"Ação de divulgação registrada no plano de marketing do imóvel.")+'</small></li>').join("")+'</ul></div>':"";
+ page.innerHTML='<div class="continuation-content">'+doneHtml+todoHtml+(analysisText?'<div class="continuation-analysis"><p>'+esc(analysisText)+'</p></div>':"")+'</div>';
  document.getElementById("report").insertBefore(page,document.getElementById("pag4"));
 }
 function fill(d){
@@ -37,18 +54,29 @@ function fill(d){
  set("p2_vis",Number(d.views||0).toLocaleString("pt-BR"));set("p2_visvirt",Number(d.virtualVisits||0).toLocaleString("pt-BR"));
  set("p2_res_vis","Visualizações em Anúncio do Imóvel "+Number(d.cumulativeViews||d.views||0).toLocaleString("pt-BR"));
  set("p2_res_visvirt","Visitas Virtuais ao Imóvel "+Number(d.cumulativeVirtualVisits||d.virtualVisits||0).toLocaleString("pt-BR"));
- set("p3_msg2",d.message2);set("p3_msg3",d.message3);
+ set("p3_msg2",d.message2);
  const report=document.getElementById("report");report.querySelectorAll(".marketing-continuation").forEach(el=>el.remove());
- const done=[...(d.doneActions||[])],todo=[...(d.todoActions||[])],firstDone=done.splice(0,5),firstTodo=todo.splice(0,5);
- list("doneList",firstDone);list("todoList",firstTodo);
- document.getElementById("todoBlock").style.display=firstTodo.length?"block":"none";
- const chunks=[];while(done.length||todo.length){chunks.push({done:done.splice(0,6),todo:todo.splice(0,6)})}
- const analysis=document.getElementById("p3_msg3");
- if(chunks.length){analysis.style.display="none";chunks.forEach((chunk,i)=>addMarketingContinuation(chunk.done,chunk.todo,i===chunks.length-1?d.message3:"",i,chunks.length))}
- else{analysis.style.display="block"}
+ const descriptions=d.actionDescriptions||{},done=[...(d.doneActions||[])],todo=[...(d.todoActions||[])];
+ renderActionList("doneList",done,descriptions);renderActionList("todoList",todo,descriptions);
+ const todoBlock=document.getElementById("todoBlock");todoBlock.style.display=todo.length?"block":"none";
+ const analysis=document.getElementById("p3_msg3");analysis.innerHTML=d.message3?'<p>'+esc(d.message3)+'</p>':"";analysis.style.display=d.message3?"block":"none";
+ const content=document.querySelector(".page3-content"),doneList=document.getElementById("doneList"),todoList=document.getElementById("todoList");
+ const overflowDone=[],overflowTodo=[];
+ const fits=()=>content.scrollHeight<=content.clientHeight+1;
+ while(!fits()&&todoList.lastElementChild){overflowTodo.unshift(todoList.lastElementChild.dataset.action);todoList.lastElementChild.remove()}
+ if(!todoList.children.length)todoBlock.style.display="none";
+ while(!fits()&&doneList.lastElementChild){overflowDone.unshift(doneList.lastElementChild.dataset.action);doneList.lastElementChild.remove()}
+ let movedAnalysis="";
+ if(!fits()&&d.message3){movedAnalysis=d.message3;analysis.style.display="none"}
+ const records=[...overflowDone.map(action=>({kind:"done",action})),...overflowTodo.map(action=>({kind:"todo",action}))];
+ const chunks=[];for(let i=0;i<records.length;i+=10){const group=records.slice(i,i+10);chunks.push({done:group.filter(x=>x.kind==="done").map(x=>x.action),todo:group.filter(x=>x.kind==="todo").map(x=>x.action),analysis:""})}
+ if(movedAnalysis){if(!chunks.length)chunks.push({done:[],todo:[],analysis:movedAnalysis});else chunks[chunks.length-1].analysis=movedAnalysis}
+ chunks.forEach(chunk=>addMarketingContinuation(chunk.done,chunk.todo,chunk.analysis,descriptions));
  set("r_nome",d.brokerName);set("r_creci",d.creci);set("r_tel",d.brokerPhone);set("r_email",d.brokerEmail);set("r_office",d.office);
  image("propertyImg",d.propertyPhoto||d.photoUrl,"propertyPlaceholder");image("brokerImg",d.brokerPhoto);image("statsImg",d.statsPhoto,"statsPlaceholder");requestAnimationFrame(layoutPage2)
 }
-window.addEventListener("resize",layoutPage2);window.renderFeedback=fill;try{const d=JSON.parse(sessionStorage.getItem("feedbackPreview")||"null");if(d)fill(d)}catch{}
+window.addEventListener("resize",layoutPage2);window.renderFeedback=fill;
+window.addEventListener("message",event=>{if(event.origin===location.origin&&event.data?.type==="feedbackPreviewData"&&event.data.data)window.renderFeedback(event.data.data)});
+try{const d=JSON.parse(sessionStorage.getItem("feedbackPreview")||"null");if(d)fill(d)}catch{}
 </script><script>(function(){const key='remax-unified-theme',root=document.documentElement;let saved='light';try{saved=localStorage.getItem(key)||'light'}catch(e){}const b=document.createElement('button');b.type='button';b.id='themeToggle';b.className='theme-toggle';b.title='Alternar entre modo claro e escuro';function apply(t){root.dataset.theme=t;b.textContent=t==='dark'?'☀ Modo claro':'☾ Modo escuro';b.setAttribute('aria-pressed',String(t==='dark'));b.setAttribute('aria-label',t==='dark'?'Ativar modo claro':'Ativar modo escuro');const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='dark'?'#222326':'#f6f5f1'}b.addEventListener('click',()=>{const t=root.dataset.theme==='dark'?'light':'dark';apply(t);try{localStorage.setItem(key,t)}catch(e){}});apply(saved);const place=document.querySelector('.preview-toolbar')||document.body;if(place)place.appendChild(b);else document.addEventListener('DOMContentLoaded',()=>{(document.querySelector('.preview-toolbar')||document.body).appendChild(b)},{once:true})})();</script>
 </body></html>
