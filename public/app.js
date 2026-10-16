@@ -106,7 +106,7 @@ function renderProperties(selectedId = null) {
 }
 function updateOwnerFields() { address.value = currentProperty()?.endereco || ""; updateLiveTotals(); }
 
-function applyPierreDraft() {
+function applyPierreDraft(presetActions = true) {
   const property = currentProperty();
   if (String(property?.proprietario_nome || "").trim().toLowerCase() !== "pierre") return;
 
@@ -137,7 +137,7 @@ function applyPierreDraft() {
   $("message1").value = "Seja muito bem-vindo a esta nova etapa conosco! É um prazer iniciar o trabalho de divulgação e gestão do seu imóvel. Nosso objetivo é apresentar a propriedade da melhor forma possível, conectando-a a potenciais interessados e trabalhando para alcançar um excelente resultado.";
   $("message2").value = "O vídeo publicado no Instagram ultrapassou 5,5 mil visualizações, ampliando a exposição do imóvel. As estatísticas específicas de visualizações e acessos ao anúncio imobiliário ainda não estão disponíveis; por isso, as visualizações do vídeo não foram somadas aos indicadores do anúncio.";
   $("message3").value = "A próxima etapa é revisar estrategicamente a foto de capa, o título, a descrição e a apresentação do terreno, destacando primeiro o valor e o potencial da área antes de qualquer sugestão de ajuste. Também vamos instalar a placa, concluir a publicação nos canais e disponibilizar o material para corretores parceiros da RE/MAX e de outras redes.";
-  renderActions(done, todo);
+  renderActions(presetActions ? done : [], presetActions ? todo : []);
   all(".char-counter").forEach(counter => {
     const input = $(counter.dataset.for);
     if (input) counter.textContent = `${input.value.length}/${input.maxLength}`;
@@ -216,7 +216,7 @@ function fileToDataURL(file,max=2400,quality=.9){return new Promise((resolve,rej
 
 async function collectData(){
   const property=currentProperty(),broker=currentBroker();if(!broker||!property)throw new Error("Perfil ou imóvel não selecionado.");const actions=selectedActions(),weeklyViews=Number($("views").value||0),weeklyVirtual=Number($("virtualVisits").value||0);
-  return{brokerId:broker.id,owner:property.proprietario_nome,address:property.endereco,date:today(),brokerName:broker.nome,brokerPhone:broker.telefone||"",brokerEmail:broker.email||"",creci:broker.creci||"",office:broker.endereco_escritorio||"",brokerPhoto:broker.foto_data||"",propertyPhoto:property.foto_data||"",views:weeklyViews,virtualVisits:weeklyVirtual,message1:$("message1").value,message2:$("message2").value,message3:$("message3").value,doneActions:actions.done,todoActions:actions.todo,cumulativeViews:Number(property.acumulado_visualizacoes||0)+weeklyViews,cumulativeVirtualVisits:Number(property.acumulado_visitas_virtuais||0)+weeklyVirtual,statsPhoto:statsPhotoData};
+  return{brokerId:broker.id,owner:property.proprietario_nome,address:property.endereco,date:today(),brokerName:broker.nome,brokerPhone:broker.telefone||"",brokerEmail:broker.email||"",creci:broker.creci||"",office:broker.endereco_escritorio||"",brokerPhoto:broker.foto_data||"",propertyPhoto:property.foto_data||"",views:weeklyViews,virtualVisits:weeklyVirtual,message1:$("message1").value,message2:$("message2").value,message3:$("message3").value,doneActions:actions.done,todoActions:actions.todo,actionDescriptions:ACTION_DESCRIPTIONS,cumulativeViews:Number(property.acumulado_visualizacoes||0)+weeklyViews,cumulativeVirtualVisits:Number(property.acumulado_visitas_virtuais||0)+weeklyVirtual,statsPhoto:statsPhotoData};
 }
 async function saveWeeklyFeedback(data){
   const property=currentProperty();if(!property)return;
@@ -224,14 +224,14 @@ async function saveWeeklyFeedback(data){
   property.acumulado_visualizacoes=data.cumulativeViews;property.acumulado_visitas_virtuais=data.cumulativeVirtualVisits;
 }
 async function buildData(){const data=await collectData(),statsFile=$("statsPhoto").files?.[0];if(statsFile){statsPhotoData=await fileToDataURL(statsFile,3000,.9);data.statsPhoto=statsPhotoData}return data}
-async function openPreview(){try{const data=await buildData();sessionStorage.setItem("feedbackPreview",JSON.stringify(data));window.open("/preview","_blank")}catch(error){console.error(error);alert(error.message||"Não foi possível abrir a visualização.")}}
+async function openPreview(){const previewWindow=window.open("about:blank","_blank");if(!previewWindow){alert("Permita a abertura de uma nova janela para visualizar o relatório.");return}try{const data=await buildData();previewWindow.addEventListener("load",()=>previewWindow.postMessage({type:"feedbackPreviewData",data},location.origin),{once:true});previewWindow.location.href="/preview?preview="+Date.now()}catch(error){console.error(error);previewWindow.close();alert(error.message||"Não foi possível abrir a visualização.")}}
 async function generatePDF(event){event.preventDefault();status.textContent="Gerando PDF...";try{const data=await buildData(),response=await fetch("/api/pdf",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify(data)});if(!response.ok)throw new Error(await response.text());const blob=await response.blob(),url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download=`FEEDBACK_${(data.owner||"imovel").replace(/[\\/:*?\"<>|]/g,"")}.pdf`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);await saveWeeklyFeedback(data);status.textContent="PDF pronto ✓"}catch(error){console.error(error);status.textContent="Erro ao gerar PDF";alert(error.message||"Não foi possível gerar o PDF.")}}
 
 function setupNavigation(){const menuButton=$("menuButton"),menuPanel=$("menuPanel");if(menuButton&&menuPanel)menuButton.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();menuPanel.hidden=!menuPanel.hidden});all("[data-page]").forEach(button=>{button.type="button";button.addEventListener("click",event=>{event.preventDefault();showPage(button.dataset.page)})});document.addEventListener("click",event=>{const menu=$("menuPanel");if(menu&&!event.target.closest("#menuPanel")&&!event.target.closest("#menuButton"))menu.hidden=true})}
 function setupCounters(){all(".char-counter").forEach(counter=>{const input=$(counter.dataset.for);if(!input)return;const update=()=>{counter.textContent=`${input.value.length}/${input.maxLength}`;counter.classList.toggle("near-limit",input.value.length>=input.maxLength*0.85)};input.addEventListener("input",update);update()})} setupCounters();
 $("addAction").addEventListener("click",event=>{event.preventDefault();const value=$("customAction").value.trim();if(value&&!actionOptions.includes(value))actionOptions.push(value);$("customAction").value="";renderActions();setupCounters()});
-$("statsPhoto").addEventListener("change",async event=>{const file=event.target.files?.[0];if(!file)return;statsPhotoData=await fileToDataURL(file,3000,.9);$("statsName").textContent=`${file.name} — preparada`});
-ownerSelect.addEventListener("change",()=>{updateOwnerFields();applyPierreDraft()});$("views").addEventListener("input",updateLiveTotals);$("virtualVisits").addEventListener("input",updateLiveTotals);
+$("statsPhoto").addEventListener("change",async event=>{const file=event.target.files?.[0];if(!file)return;statsPhotoData=await fileToDataURL(file,3000,.9);$("statsName").textContent=`${file.name} — preparada`;const preview=$("statsPhotoPreview");if(preview){preview.src=statsPhotoData;preview.classList.remove("hidden")}});
+ownerSelect.addEventListener("change",()=>{updateOwnerFields();renderActions();applyPierreDraft(false)});$("views").addEventListener("input",updateLiveTotals);$("virtualVisits").addEventListener("input",updateLiveTotals);
 $("brokerPhoto").addEventListener("change",async event=>{const file=event.target.files?.[0];if(!file)return;brokerPhotoData=await fileToDataURL(file,1600,.9);$("brokerPhotoName").textContent=`${file.name} — preparada`});
 $("saveBroker").addEventListener("click",saveBrokerProfile);$("closeBrokerForm").addEventListener("click",()=>$("brokerFormPanel").classList.add("hidden"));$("addBrokerButton").addEventListener("click",()=>openBrokerForm());$("brokerListButton").addEventListener("click",()=>{$("brokerFormPanel").classList.add("hidden");renderBrokerList()});$("previewButton").addEventListener("click",openPreview);$("downloadButton").addEventListener("click",()=>generatePDF({preventDefault(){}}));
 
