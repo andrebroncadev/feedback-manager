@@ -89,3 +89,21 @@ html[data-theme="dark"] .auth-divider{background:#4b4c50}
 html[data-theme="dark"] .auth-form input{background:#25272a;color:#f4f1e8;border-color:#4b4c50}
 html[data-theme="dark"] .auth-forgot{color:#d2b46b}
 @media(max-width:420px){.auth-login-shell{padding:18px 12px}.auth-login-card{border-radius:17px;padding:24px 20px}}
+
+/* Catálogo de ações: explicações acessíveis e página de referência */
+.action-row{grid-template-columns:minmax(0,1fr) 78px 82px;align-items:start}
+.action-label-wrap{display:grid;grid-template-columns:minmax(0,1fr) 25px;gap:6px;align-items:start;min-width:0}
+.action-label-wrap>span:first-child{line-height:1.4}
+.action-help{width:22px;height:22px;display:inline-grid;place-items:center;border:1px solid var(--theme-line);border-radius:50%;background:var(--theme-surface-2);color:var(--theme-navy);font-size:12px;font-weight:900;cursor:pointer}
+.action-description{grid-column:1/-1;padding:8px 10px;border-left:3px solid var(--theme-gold);border-radius:0 7px 7px 0;background:var(--theme-surface-2);color:var(--theme-text);font-size:11px;font-weight:400;line-height:1.5}
+.action-description[hidden]{display:none!important}
+.guide-intro{padding:14px 16px;margin-bottom:20px;border-left:4px solid var(--theme-gold);background:var(--theme-surface-2);border-radius:0 10px 10px 0;color:var(--theme-text);line-height:1.6;font-size:13px}
+.guide-intro p{margin-top:6px;color:var(--theme-muted)}
+.guide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.guide-category{border:1px solid var(--theme-line);border-radius:12px;padding:16px;min-width:0}
+.guide-category h2{font-size:15px;margin-bottom:12px;padding-bottom:9px;border-bottom:1px solid var(--theme-line)}
+.guide-item{padding:10px 0;border-bottom:1px solid var(--theme-line)}
+.guide-item:last-child{border-bottom:0;padding-bottom:0}
+.guide-item h3{font-size:12px;color:var(--theme-text);margin-bottom:4px}
+.guide-item p{font-size:12px;line-height:1.55;color:var(--theme-muted)}
+@media(max-width:760px){.guide-grid{grid-template-columns:1fr}.action-row{grid-template-columns:minmax(0,1fr) 70px 75px}.action-label-wrap{grid-column:1/-1}.action-row>label{margin-top:4px}}
