@@ -16,23 +16,42 @@ let brokerPhotoData = "";
 let propertyPhotoData = "";
 let statsPhotoData = "";
 
-const DEFAULT_ACTIONS = [
-  "Panfletagem estratégica / impressão e distribuição",
-  "Manutenção da divulgação nas plataformas imobiliárias",
-  "Divulgação nas redes sociais",
-  "Divulgação no grupo interno de especialistas RE/MAX",
-  "Show de Captações",
-  "Placa no imóvel",
-  "Revisão do anúncio",
-  "Home staging",
-  "Plano de marketing",
-  "Vistoria completa",
-  "Visitas técnicas",
-  "Prospecção de investidores / construtores",
-  "Monitoramento dos indicadores de desempenho",
-  "Acompanhamento da procura pela região",
-  "Análise do posicionamento do imóvel pela equipe de marketing"
+const ACTION_CATALOG = [
+  ["Planejamento de marketing do imóvel","Define público-alvo, diferenciais, canais, cronograma e objetivos da divulgação."],
+  ["Fotografia profissional","Produz fotos bem iluminadas e organizadas para apresentar os ambientes e os diferenciais reais do imóvel."],
+  ["Vídeo de apresentação","Apresenta o imóvel em vídeo para aumentar o interesse e facilitar a primeira avaliação do comprador."],
+  ["Tour virtual / visita virtual","Permite conhecer o imóvel remotamente, útil para interessados que estão longe ou querem uma primeira triagem."],
+  ["Imagens aéreas com drone","Mostra terreno, implantação, entorno e proximidade de referências quando permitido e relevante."],
+  ["Preparação visual do imóvel (home staging)","Sugere ajustes de organização, iluminação e composição para melhorar a apresentação sem ocultar características."],
+  ["Redação e revisão do anúncio","Confere título, descrição, informações, diferenciais e clareza antes de publicar ou atualizar."],
+  ["Publicação em portais imobiliários","Coloca o anúncio nos portais escolhidos para ampliar o alcance entre pessoas que já procuram imóveis."],
+  ["Manutenção dos anúncios nas plataformas imobiliárias","Mantém preço, disponibilidade, fotos e descrição atualizados nos canais onde o imóvel está anunciado."],
+  ["Divulgação nas redes sociais","Publica conteúdo nos perfis sociais adequados ao público e ao posicionamento do imóvel."],
+  ["Campanha de tráfego pago","Distribui anúncios patrocinados para públicos e regiões definidos, acompanhando investimento e resultados."],
+  ["Distribuição do material a corretores parceiros","Compartilha ficha, fotos e informações com profissionais que possam ter clientes compatíveis."],
+  ["Divulgação no grupo interno de especialistas RE/MAX","Apresenta o imóvel à rede interna para estimular indicações e colaboração entre corretores."],
+  ["Show de Captações","Apresenta o imóvel aos corretores da equipe para que conheçam seus diferenciais e possam indicá-lo."],
+  ["Panfletagem direcionada","Imprime e distribui material em locais escolhidos conforme o perfil do imóvel e do público."],
+  ["Placa de divulgação no imóvel","Instala placa quando autorizada e adequada, facilitando o reconhecimento por pessoas que circulam na região."],
+  ["Open house / visita coletiva","Organiza um período de visitação para interessados, quando apropriado e aprovado pelo proprietário."],
+  ["Agendamento e acompanhamento de visitas","Coordena visitas presenciais, confirma presença e registra impressões relevantes dos interessados."],
+  ["Prospecção ativa de compradores","Busca potenciais compradores em canais e bases de relacionamento, respeitando consentimento e pertinência."],
+  ["Prospecção de investidores e construtores","Apresenta o imóvel a investidores ou construtores quando o perfil e o potencial da propriedade forem compatíveis."],
+  ["Contato com a carteira de clientes","Cruza características do imóvel com necessidades já identificadas de clientes da imobiliária."],
+  ["Parcerias com imobiliárias e corretores externos","Amplia a distribuição por meio de profissionais de outras redes, compartilhando informações corretas e autorizadas."],
+  ["Estudo de preço e imóveis concorrentes","Compara ofertas semelhantes para contextualizar o posicionamento, sem confundir preço anunciado com valor de venda."],
+  ["Acompanhamento da procura na região","Observa interesse, oferta concorrente e mudanças relevantes no mercado local."],
+  ["Monitoramento dos indicadores de desempenho","Acompanha visualizações, contatos, visitas e outros indicadores disponíveis para avaliar a divulgação."],
+  ["Relatório de retorno das visitas","Organiza comentários dos visitantes para identificar objeções recorrentes e pontos de melhoria."],
+  ["Revisão estratégica do anúncio","Reavalia foto de capa, título, descrição e ordem das informações com base na resposta do mercado."],
+  ["Atualização do material de divulgação","Renova fotos, vídeos, ficha e peças quando houver informação nova ou oportunidade de melhorar a apresentação."],
+  ["Contato com empresas e relocação corporativa","Verifica oportunidades junto a empresas ou profissionais que busquem imóveis para funcionários, quando aplicável."],
+  ["Acompanhamento de leads e retornos","Registra interessados, próximos contatos e respostas para reduzir perdas por falta de acompanhamento."],
+  ["Avaliação de desempenho com a equipe de marketing","Solicita análise especializada da apresentação, do posicionamento e dos canais de divulgação."],
+  ["Revisão periódica do plano de marketing","Revisa ações e prioridades conforme os dados, o feedback recebido e o tempo de exposição no mercado."]
 ];
+const DEFAULT_ACTIONS = ACTION_CATALOG.map(([name]) => name);
+const ACTION_DESCRIPTIONS = Object.fromEntries(ACTION_CATALOG);
 let actionOptions = [...DEFAULT_ACTIONS];
 
 function esc(value) { return String(value ?? "").replace(/[&<>\"]/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[char])); }
@@ -95,21 +114,25 @@ function applyPierreDraft() {
     "Produção de vídeo para divulgação no Instagram",
     "Realização de sessão fotográfica profissional",
     "Produção de vídeo tour e imagens aéreas com drone",
-    "Manutenção da divulgação nas plataformas imobiliárias",
+    "Manutenção dos anúncios nas plataformas imobiliárias",
     "Divulgação nas redes sociais",
     "Divulgação no grupo interno de especialistas RE/MAX",
     "Show de Captações",
-    "Prospecção de investidores / construtores",
-    "Tráfego pago direcionado a cidades paulistas de maior renda per capita",
+    "Prospecção de investidores e construtores",
+    "Campanha de tráfego pago",
     "Monitoramento dos indicadores de desempenho"
   ];
   const todo = [
-    "Instalação da placa de divulgação no imóvel",
-    "Finalização e publicação do anúncio nos canais de divulgação",
-    "Disponibilização do material de apresentação para corretores parceiros da RE/MAX e profissionais de outras redes",
-    "Review estratégico do anúncio: foto de capa, título, descrição e apresentação do terreno"
+    "Placa de divulgação no imóvel",
+    "Publicação em portais imobiliários",
+    "Distribuição do material a corretores parceiros",
+    "Revisão estratégica do anúncio"
   ];
   for (const action of [...done, ...todo]) if (!actionOptions.includes(action)) actionOptions.push(action);
+  ACTION_DESCRIPTIONS["Produção de vídeo para divulgação no Instagram"]="Vídeo produzido para apresentar o imóvel ao público das redes sociais.";
+  ACTION_DESCRIPTIONS["Realização de sessão fotográfica profissional"]="Sessão de fotos profissionais realizada para valorizar a apresentação do imóvel.";
+  ACTION_DESCRIPTIONS["Produção de vídeo tour e imagens aéreas com drone"]="Material audiovisual de apresentação e imagens aéreas produzidos.";
+  ACTION_DESCRIPTIONS["Prospecção de investidores e construtores"]="Contato direcionado a investidores e construtores potencialmente compatíveis.";
 
   $("views").value = "0";
   $("virtualVisits").value = "0";
@@ -132,7 +155,16 @@ function updateLiveTotals() {
 
 function renderActions(done=[],todo=[]) {
   const box=$("actions"); if(!box)return;
-  box.innerHTML=actionOptions.map(action=>`<div class="action-row"><span>${esc(action)}</span><label><input type="checkbox" data-kind="done" data-action="${esc(action)}" ${done.includes(action)?"checked":""}> Feita</label><label><input type="checkbox" data-kind="todo" data-action="${esc(action)}" ${todo.includes(action)?"checked":""}> À fazer</label></div>`).join("");
+  box.innerHTML=actionOptions.map(action=>{
+    const description=ACTION_DESCRIPTIONS[action]||"Registre esta ação quando ela fizer parte do plano de divulgação do imóvel.";
+    return `<div class="action-row"><div class="action-label-wrap"><span>${esc(action)}</span><button type="button" class="action-help" aria-label="Explicação: ${esc(action)}" aria-expanded="false" title="Ver explicação">i</button><span class="action-description" hidden>${esc(description)}</span></div><label><input type="checkbox" data-kind="done" data-action="${esc(action)}" ${done.includes(action)?"checked":""}> Feita</label><label><input type="checkbox" data-kind="todo" data-action="${esc(action)}" ${todo.includes(action)?"checked":""}> À fazer</label></div>`;
+  }).join("");
+  all(".action-help").forEach(button=>button.addEventListener("click",()=>{
+    const description=button.parentElement.querySelector(".action-description");
+    const opening=description.hidden;
+    description.hidden=!opening;
+    button.setAttribute("aria-expanded",String(opening));
+  }));
 }
 function selectedActions(){return{done:all("#actions input[data-kind='done']:checked").map(x=>x.dataset.action),todo:all("#actions input[data-kind='todo']:checked").map(x=>x.dataset.action)}}
 
