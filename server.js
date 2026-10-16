@@ -1,5 +1,6 @@
 import express from "express";
-import puppeteer from "puppeteer";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -70,7 +71,7 @@ app.post("/api/pdf", requireAuthorized, async (req, res) => {
   if (!data || typeof data !== "object") return res.status(400).json({ error: "Dados inválidos." });
   let browser;
   try {
-    browser = await puppeteer.launch({ headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] });
+    browser = await puppeteer.launch({ args: chromium.args, defaultViewport: chromium.defaultViewport, executablePath: await chromium.executablePath(), headless: true });
     const page = await browser.newPage();
     await page.setViewport({ width: 612, height: 792, deviceScaleFactor: 1 });
     await page.goto(`${req.protocol}://${req.get("host")}/preview`, { waitUntil: "domcontentloaded", timeout: 30000 });
