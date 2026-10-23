@@ -22,6 +22,11 @@
     if (!session?.user || String(session.user.email || "").toLowerCase() !== AUTHORIZED_EMAIL) return false;
     window.feedbackSession = session;
     document.body.classList.add("authenticated");
+    const authScreen = document.getElementById("feedbackAuthScreen");
+    if (authScreen) {
+      authScreen.style.display = "none";
+      authScreen.setAttribute("aria-hidden", "true");
+    }
     message("");
     resolveAuth(session);
     return true;
