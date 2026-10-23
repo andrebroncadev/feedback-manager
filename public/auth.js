@@ -55,7 +55,8 @@
     loginButton.textContent = "Entrando…";
     const { data, error } = await client.auth.signInWithPassword({ email, password });
     if (error) {
-      message("Não foi possível entrar. Confira o e-mail e a senha.", "error");
+      const reason = error?.message || error?.code || "erro desconhecido";
+      message("Falha no login: " + reason, "error");
     } else if (!acceptSession(data.session)) {
       await client.auth.signOut();
       message("Esta conta não tem permissão para acessar o Feedback Maker.", "error");
