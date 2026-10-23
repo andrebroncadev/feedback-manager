@@ -53,16 +53,24 @@
     if (!email || !password) return message("Informe o e-mail e a senha.", "error");
     loginButton.disabled = true;
     loginButton.textContent = "Entrando…";
-    const { data, error } = await client.auth.signInWithPassword({ email, password });
-    if (error) {
-      const reason = error?.message || error?.code || "erro desconhecido";
-      message("Falha no login: " + reason, "error");
-    } else if (!acceptSession(data.session)) {
-      await client.auth.signOut();
-      message("Esta conta não tem permissão para acessar o Feedback Maker.", "error");
+    try {
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+      if (error) {
+        const reason = error.message || error.code || "erro desconhecido";
+        message("Falha no login: " + reason, "error");
+      } else if (!data?.session?.user) {
+        message("O Supabase aceitou a solicitação, mas não retornou uma sessão. Tente atualizar a página.", "error");
+      } else if (!acceptSession(data.session)) {
+        const accountEmail = data.session.user.email || "(e-mail não retornado)";
+        await client.auth.signOut();
+        message("Login válido, mas sem autorização para este app. Conta autenticada: " + accountEmail, "error");
+      }
+    } catch (err) {
+      message("Erro ao tentar entrar: " + (err?.message || String(err)), "error");
+    } finally {
+      loginButton.disabled = false;
+      loginButton.innerHTML = 'Entrar <span aria-hidden="true">→</span>';
     }
-    loginButton.disabled = false;
-    loginButton.innerHTML = 'Entrar <span aria-hidden="true">→</span>';
   });
 
   document.getElementById("feedbackForgotPassword")?.addEventListener("click", async () => {
