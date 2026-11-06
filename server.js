@@ -13,7 +13,7 @@ const dataDir = path.join(__dirname, "data");
 
 const AUTH_URL = "https://vqenzubwfzwwndgjucim.supabase.co";
 const AUTH_PUBLISHABLE_KEY = "sb_publishable_s4o-wW-rdUbEesSKe6NhNg_u7gzYeCf";
-const AUTHORIZED_EMAIL = "andrebronca60@gmail.com";
+const AUTHORIZED_EMAILS = new Set(["andrebronca60@gmail.com", "ericabronca@gmail.com"]);
 
 async function requireAuthorized(req, res, next) {
   const token = /^Bearer\s+(.+)$/i.exec(req.headers.authorization || "")?.[1];
@@ -24,7 +24,7 @@ async function requireAuthorized(req, res, next) {
     });
     if (!response.ok) return res.status(401).json({ error: "Sessão inválida ou expirada. Entre novamente." });
     const user = await response.json();
-    if (String(user.email || "").toLowerCase() !== AUTHORIZED_EMAIL) {
+    if (!AUTHORIZED_EMAILS.has(String(user.email || "").trim().toLowerCase())) {
       return res.status(403).json({ error: "Esta conta não tem permissão para acessar o Feedback Maker." });
     }
     req.authUser = user;
