@@ -2,7 +2,7 @@
   "use strict";
   const SUPABASE_URL = "https://vqenzubwfzwwndgjucim.supabase.co";
   const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_s4o-wW-rdUbEesSKe6NhNg_u7gzYeCf";
-  const AUTHORIZED_EMAIL = "andrebronca60@gmail.com";
+  const AUTHORIZED_EMAILS = new Set(["andrebronca60@gmail.com", "ericabronca@gmail.com"]);
   const client = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
@@ -19,7 +19,7 @@
     status.className = "auth-feedback" + (type ? " " + type : "");
   }
   function acceptSession(session) {
-    if (!session?.user || String(session.user.email || "").toLowerCase() !== AUTHORIZED_EMAIL) return false;
+    if (!session?.user || !AUTHORIZED_EMAILS.has(String(session.user.email || "").trim().toLowerCase())) return false;
     window.feedbackSession = session;
     document.body.classList.add("authenticated");
     const authScreen = document.getElementById("feedbackAuthScreen");
