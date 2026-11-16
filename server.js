@@ -61,6 +61,10 @@ app.post("/api/feedback-data", requireAuthorized, async (req, res) => {
     if (isAndre && table === "feedback_weeks") {
       return res.status(403).json({ error: "Esta conta não tem acesso a esse conjunto de dados." });
     }
+    if (!isAndre && table === "feedback_properties" && normalizedMethod !== "GET") {
+      if (!body || typeof body !== "object" || Array.isArray(body)) return res.status(400).json({ error: "Dados do imóvel inválidos." });
+      body.broker_id = "erica";
+    }
     const url = new URL(`https://ctfmuvtvjvlzjiapyrdh.supabase.co/rest/v1/${table}`);
     if (query) {
       for (const [key, value] of new URLSearchParams(String(query))) url.searchParams.set(key, value);
@@ -72,7 +76,7 @@ app.post("/api/feedback-data", requireAuthorized, async (req, res) => {
       "Content-Type": "application/json",
       Prefer: method === "POST" ? "return=representation" : "return=representation"
     };
-    const response = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    const response = await fetch(url, { method: normalizedMethod, headers, body: body ? JSON.stringify(body) : undefined });
     const text = await response.text();
     res.status(response.status).type("application/json").send(text || "[]");
   } catch (error) {
@@ -96,9 +100,9 @@ app.post("/api/pdf", requireAuthorized, async (req, res) => {
   const data = req.body;
   if (!data || typeof data !== "object") return res.status(400).json({ error: "Dados inválidos." });
   const isAndre = String(req.authUser?.email || "").trim().toLowerCase() === ANDRE_EMAIL;
+  if (isAndre) return res.status(403).json({ error: "Sua conta está sem imóveis vinculados. A emissão de feedbacks em nome de André é feita pela conta Érica." });
   const requestedBrokerId = String(data.brokerId || "");
-  if (isAndre && requestedBrokerId !== "andre") return res.status(403).json({ error: "A conta André só pode emitir feedback em seu próprio nome." });
-  if (!isAndre && !["erica", "andre"].includes(requestedBrokerId)) return res.status(400).json({ error: "Corretor inválido para este relatório." });
+  if (!["erica", "andre"].includes(requestedBrokerId)) return res.status(400).json({ error: "Corretor inválido para este relatório." });
   try {
     const broker = await getBrokerProfile(requestedBrokerId);
     if (!broker) return res.status(400).json({ error: "O cadastro do corretor selecionado não foi encontrado." });
