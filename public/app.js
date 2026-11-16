@@ -10,6 +10,10 @@ const status = $("saveStatus");
 let brokers = [];
 let properties = [];
 let brokerId = "erica";
+const ANDRE_EMAIL = "andrebronca60@gmail.com";
+function isAndreUser() {
+  return String(window.feedbackSession?.user?.email || "").trim().toLowerCase() === ANDRE_EMAIL;
+}
 let editingBrokerId = null;
 let editingPropertyId = null;
 let brokerPhotoData = "";
@@ -85,15 +89,23 @@ async function sb(table, options = {}) {
 }
 
 async function loadBrokers() {
-  brokers = await sb("feedback_brokers", { query: "select=*&ativo=eq.true&order=nome.asc" });
-  if (!brokers.length) brokers = await sb("feedback_brokers", { method: "POST", body: { id:"erica", nome:"Érica Bronca", telefone:"(12) 98123-5534", email:"ericabronca@remax.com.br", creci:"CRECI 199167", endereco_escritorio:"324 Rua Claudio Izidoro do Espírito Santo, Juquehy — São Sebastião", ativo:true } });
-  const saved = localStorage.getItem("feedbackActiveBroker");
-  brokerId = saved && brokers.some(b => b.id === saved) ? saved : brokers[0].id;
+  const query = isAndreUser()
+    ? "select=*&id=eq.andre&ativo=eq.true&order=nome.asc"
+    : "select=*&ativo=eq.true&order=nome.asc";
+  brokers = await sb("feedback_brokers", { query });
+  if (!brokers.length) throw new Error("O cadastro do corretor vinculado a este acesso não foi encontrado.");
+  if (isAndreUser()) {
+    brokerId = "andre";
+  } else {
+    const saved = localStorage.getItem("feedbackActiveBroker");
+    brokerId = saved && brokers.some(b => b.id === saved) ? saved : "erica";
+    if (!brokers.some(b => b.id === brokerId)) brokerId = brokers[0].id;
+  }
   localStorage.setItem("feedbackActiveBroker", brokerId);
 }
 
 async function loadProperties() {
-  properties = await sb("feedback_properties", { query:`select=*&broker_id=eq.${encodeURIComponent(brokerId)}&ativo=eq.true&order=proprietario_nome.asc` });
+  properties = isAndreUser() ? [] : await sb("feedback_properties", { query:"select=*&ativo=eq.true&order=proprietario_nome.asc" });
   renderProperties(); renderPropertyManager();
 }
 function currentBroker() { return brokers.find(b => b.id === brokerId) || null; }
@@ -167,6 +179,7 @@ function renderActions(done=[],todo=[]) {
 function selectedActions(){return{done:all("#actions input[data-kind='done']:checked").map(x=>x.dataset.action),todo:all("#actions input[data-kind='todo']:checked").map(x=>x.dataset.action)}}
 
 function showPage(name){
+  if (isAndreUser() && name === "properties") name = "feedback";
   all(".app-page").forEach(page=>page.classList.add("hidden"));
   const target=$("page"+name.charAt(0).toUpperCase()+name.slice(1)); if(target)target.classList.remove("hidden");
   if(name==="brokers")renderBrokerList(); if(name==="properties")renderPropertyManager();
@@ -175,7 +188,7 @@ function showPage(name){
 
 function renderBrokerList(){
   const box=$("brokerList"); if(!box)return;
-  box.innerHTML=brokers.length?brokers.map(b=>`<article class="broker-card ${b.id===brokerId?"active":""}"><button type="button" class="broker-select" data-broker="${esc(b.id)}">${b.foto_data?`<img src="${b.foto_data}" alt="">`:`<span class="avatar">${esc((b.nome||"?").charAt(0))}</span>`}<span><b>${esc(b.nome)}</b><small>${esc(b.creci||"CRECI não informado")} · ${b.id===brokerId?"Perfil atual":"Selecionar"}</small></span></button><div class="card-actions"><button type="button" class="secondary-button small" data-edit-broker="${esc(b.id)}">Editar</button><button type="button" class="danger-button small" data-delete-broker="${esc(b.id)}">Excluir</button></div></article>`).join(""):'<div class="empty-state">Nenhum corretor cadastrado.</div>';
+  box.innerHTML=brokers.length?brokers.map(b=>`<article class="broker-card ${b.id===brokerId?"active":""}"><button type="button" class="broker-select" data-broker="${esc(b.id)}">${b.foto_data?`<img src="${b.foto_data}" alt="">`:`<span class="avatar">${esc((b.nome||"?").charAt(0))}</span>`}<span><b>${esc(b.nome)}</b><small>${esc(b.creci||"CRECI não informado")} · ${b.id===brokerId?"Perfil atual":"Selecionar"}</small></span></button>${isAndreUser()?"":`<div class="card-actions"><button type="button" class="secondary-button small" data-edit-broker="${esc(b.id)}">Editar</button><button type="button" class="danger-button small" data-delete-broker="${esc(b.id)}">Excluir</button></div>`}</article>`).join(""):'<div class="empty-state">Nenhum corretor cadastrado.</div>';
   all("[data-broker]").forEach(button=>button.onclick=async()=>{brokerId=button.dataset.broker;localStorage.setItem("feedbackActiveBroker",brokerId);await applyBroker(currentBroker());await loadProperties();showPage("feedback")});
   all("[data-edit-broker]").forEach(button=>button.onclick=()=>openBrokerForm(button.dataset.editBroker));
   all("[data-delete-broker]").forEach(button=>button.onclick=()=>deleteBroker(button.dataset.deleteBroker));
@@ -198,8 +211,12 @@ async function applyBroker(b){if(!b)return;$("brokerName").value=b.nome||"";$("b
 
 function renderPropertyManager(){
   const box=$("propertyManager");if(!box)return;$("propertyPageBroker").textContent=currentBroker()?.nome||"corretor";
-  box.innerHTML=`<div class="manager-toolbar"><div><h2>Imóveis cadastrados</h2><p>${properties.length} imóvel(is) vinculado(s) a ${esc(currentBroker()?.nome||"este corretor")}.</p></div><button type="button" class="primary-button" id="addPropertyButton">+ Adicionar imóvel</button></div><div class="property-list">${properties.length?properties.map(p=>`<article class="property-card">${p.foto_data?`<img src="${p.foto_data}" alt="">`:`<div class="property-placeholder">IMÓVEL</div>`}<div class="property-card-body"><b>${esc(p.proprietario_nome||"Sem proprietário")}</b><span>${esc(p.endereco||"Endereço não informado")}</span>${p.codigo_remax?`<small>RE/MAX ${esc(p.codigo_remax)}</small>`:""}</div><div class="card-actions"><button type="button" class="secondary-button small" data-edit-property="${esc(p.id)}">Editar</button><button type="button" class="danger-button small" data-delete-property="${esc(p.id)}">Excluir</button></div></article>`).join(""):'<div class="empty-state">Nenhum imóvel cadastrado para este corretor.</div>'}</div><div class="panel property-form-panel hidden" id="propertyFormPanel"></div>`;
-  $("addPropertyButton").onclick=()=>openPropertyForm();all("[data-edit-property]").forEach(btn=>btn.onclick=()=>openPropertyForm(btn.dataset.editProperty));all("[data-delete-property]").forEach(btn=>btn.onclick=()=>deleteProperty(btn.dataset.deleteProperty));
+  box.innerHTML=`<div class="manager-toolbar"><div><h2>Carteira de imóveis</h2><p>${properties.length} imóvel(is) na carteira compartilhada da Érica.</p></div>${isAndreUser()?"":'<button type="button" class="primary-button" id="addPropertyButton">+ Adicionar imóvel</button>'}</div><div class="property-list">${properties.length?properties.map(p=>`<article class="property-card">${p.foto_data?`<img src="${p.foto_data}" alt="">`:`<div class="property-placeholder">IMÓVEL</div>`}<div class="property-card-body"><b>${esc(p.proprietario_nome||"Sem proprietário")}</b><span>${esc(p.endereco||"Endereço não informado")}</span>${p.codigo_remax?`<small>RE/MAX ${esc(p.codigo_remax)}</small>`:""}</div><div class="card-actions"><button type="button" class="secondary-button small" data-edit-property="${esc(p.id)}">Editar</button><button type="button" class="danger-button small" data-delete-property="${esc(p.id)}">Excluir</button></div></article>`).join(""):'<div class="empty-state">Nenhum imóvel cadastrado para este corretor.</div>'}</div><div class="panel property-form-panel hidden" id="propertyFormPanel"></div>`;
+  if (!isAndreUser()) {
+    $("addPropertyButton").onclick=()=>openPropertyForm();
+    all("[data-edit-property]").forEach(btn=>btn.onclick=()=>openPropertyForm(btn.dataset.editProperty));
+    all("[data-delete-property]").forEach(btn=>btn.onclick=()=>deleteProperty(btn.dataset.deleteProperty));
+  }
 }
 function openPropertyForm(id=null){
   editingPropertyId=id;const p=id?properties.find(x=>String(x.id)===String(id)):null;const panel=$("propertyFormPanel");panel.classList.remove("hidden");
@@ -209,7 +226,7 @@ function openPropertyForm(id=null){
 async function saveProperty(){
   const owner=$("propertyOwner").value.trim(),endereco=$("propertyAddress").value.trim();if(!owner||!endereco)return alert("Informe o proprietário e o endereço do imóvel.");const id=editingPropertyId||`imovel-${Date.now()}`,old=editingPropertyId?properties.find(p=>String(p.id)===String(editingPropertyId)):null;
   status.textContent="Salvando imóvel...";
-  const selectedBroker=$("propertyBroker").value||brokerId; const payload={id,broker_id:selectedBroker,proprietario_nome:owner,endereco,codigo_remax:$("propertyCode").value.trim(),foto_data:propertyPhotoData||null,ativo:true,acumulado_visualizacoes:old?.acumulado_visualizacoes||0,acumulado_visitas_virtuais:old?.acumulado_visitas_virtuais||0};
+  const selectedBroker="erica"; const payload={id,broker_id:selectedBroker,proprietario_nome:owner,endereco,codigo_remax:$("propertyCode").value.trim(),foto_data:propertyPhotoData||null,ativo:true,acumulado_visualizacoes:old?.acumulado_visualizacoes||0,acumulado_visitas_virtuais:old?.acumulado_visitas_virtuais||0};
   if(editingPropertyId)await sb("feedback_properties",{method:"PATCH",query:`id=eq.${encodeURIComponent(id)}`,body:payload});else await sb("feedback_properties",{method:"POST",body:payload});brokerId=selectedBroker; localStorage.setItem("feedbackActiveBroker",brokerId); await applyBroker(currentBroker()); await loadProperties(); renderPropertyManager(); status.textContent="Imóvel salvo ✓";
 }
 async function deleteProperty(id){if(!confirm("Excluir este imóvel?"))return;status.textContent="Excluindo imóvel...";await sb("feedback_properties",{method:"PATCH",query:`id=eq.${encodeURIComponent(id)}`,body:{ativo:false}});await loadProperties();renderPropertyManager();status.textContent="Imóvel excluído ✓"}
@@ -240,6 +257,11 @@ $("saveBroker").addEventListener("click",saveBrokerProfile);$("closeBrokerForm")
 (async function init(){
   try {
     await window.feedbackAuthReady;
+    if (isAndreUser()) {
+      all('.nav-links [data-page="properties"], #menuPanel [data-page="properties"]').forEach(button => button.hidden = true);
+      const addBroker = $("addBrokerButton");
+      if (addBroker) addBroker.hidden = true;
+    }
     await loadBrokers();
     await applyBroker(currentBroker());
     renderActions();
