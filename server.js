@@ -11,8 +11,8 @@ const __dirname = path.dirname(__filename);
 const publicDir = path.join(__dirname, "public");
 const dataDir = path.join(__dirname, "data");
 
-const AUTH_URL = "https://vqenzubwfzwwndgjucim.supabase.co";
-const AUTH_PUBLISHABLE_KEY = "sb_publishable_s4o-wW-rdUbEesSKe6NhNg_u7gzYeCf";
+const AUTH_URL = "https://ctfmuvtvjvlzjiapyrdh.supabase.co";
+const AUTH_PUBLISHABLE_KEY = "sb_publishable_EpiB8s1RrbMW9_75MkF01w_7AdDhMhT";
 const AUTHORIZED_EMAILS = new Set(["andrebronca60@gmail.com", "ericabronca@gmail.com"]);
 
 async function requireAuthorized(req, res, next) {
