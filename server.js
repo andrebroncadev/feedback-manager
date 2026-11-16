@@ -14,6 +14,8 @@ const dataDir = path.join(__dirname, "data");
 const AUTH_URL = "https://ctfmuvtvjvlzjiapyrdh.supabase.co";
 const AUTH_PUBLISHABLE_KEY = "sb_publishable_EpiB8s1RrbMW9_75MkF01w_7AdDhMhT";
 const AUTHORIZED_EMAILS = new Set(["andrebronca60@gmail.com", "ericabronca@gmail.com"]);
+const ANDRE_EMAIL = "andrebronca60@gmail.com";
+const DATA_API_KEY = [101,121,74,104,98,71,99,105,79,105,74,73,85,122,73,49,78,105,73,115,73,110,82,53,99,67,73,54,73,107,112,88,86,67,74,57,46,101,121,74,112,99,51,77,105,79,105,74,122,100,88,66,104,89,109,70,122,90,83,73,115,73,110,74,108,90,105,73,54,73,109,78,48,90,109,49,49,100,110,82,50,97,110,90,115,101,109,112,112,89,88,66,53,99,109,82,111,73,105,119,105,99,109,57,115,90,83,73,54,73,109,70,117,98,50,52,105,76,67,74,112,89,88,81,105,79,106,69,51,79,84,65,52,78,106,89,121,78,84,99,115,73,109,86,52,99,67,73,54,77,106,69,119,78,106,81,48,77,106,73,49,78,51,48,46,101,66,80,102,106,103,100,67,121,55,117,49,56,122,103,99,118,119,110,109,110,105,57,50,79,85,114,74,117,77,68,120,81,88,70,77,72,86,45,52,117,85,81].map(n => String.fromCharCode(n)).join("");
 
 async function requireAuthorized(req, res, next) {
   const token = /^Bearer\s+(.+)$/i.exec(req.headers.authorization || "")?.[1];
@@ -43,14 +45,27 @@ app.get("/preview", (_req, res) => res.sendFile(path.join(publicDir, "preview.ht
 
 app.post("/api/feedback-data", requireAuthorized, async (req, res) => {
   try {
-    const anonKey = [101,121,74,104,98,71,99,105,79,105,74,73,85,122,73,49,78,105,73,115,73,110,82,53,99,67,73,54,73,107,112,88,86,67,74,57,46,101,121,74,112,99,51,77,105,79,105,74,122,100,88,66,104,89,109,70,122,90,83,73,115,73,110,74,108,90,105,73,54,73,109,78,48,90,109,49,49,100,110,82,50,97,110,90,115,101,109,112,112,89,88,66,53,99,109,82,111,73,105,119,105,99,109,57,115,90,83,73,54,73,109,70,117,98,50,52,105,76,67,74,112,89,88,81,105,79,106,69,51,79,84,65,52,78,106,89,121,78,84,99,115,73,109,86,52,99,67,73,54,77,106,69,119,78,106,81,48,77,106,73,49,78,51,48,46,101,66,80,102,106,103,100,67,121,55,117,49,56,122,103,99,118,119,110,109,110,105,57,50,79,85,114,74,117,77,68,120,81,88,70,77,72,86,45,52,117,85,81].map(n => String.fromCharCode(n)).join("");
+    const anonKey = DATA_API_KEY;
     const { table, query = "", method = "GET", body } = req.body || {};
     const allowed = ["feedback_brokers","feedback_properties","feedback_weeks"];
     if (!allowed.includes(table)) return res.status(400).json({ error: "Tabela não permitida." });
+    const isAndre = String(req.authUser?.email || "").trim().toLowerCase() === ANDRE_EMAIL;
+    const normalizedMethod = String(method || "GET").toUpperCase();
+    if (isAndre && table === "feedback_properties") {
+      if (normalizedMethod !== "GET") return res.status(403).json({ error: "A conta André não pode alterar a carteira de imóveis." });
+      return res.json([]);
+    }
+    if (isAndre && table === "feedback_brokers" && normalizedMethod !== "GET") {
+      return res.status(403).json({ error: "A conta André não pode alterar cadastros de corretores." });
+    }
+    if (isAndre && table === "feedback_weeks") {
+      return res.status(403).json({ error: "Esta conta não tem acesso a esse conjunto de dados." });
+    }
     const url = new URL(`https://ctfmuvtvjvlzjiapyrdh.supabase.co/rest/v1/${table}`);
     if (query) {
       for (const [key, value] of new URLSearchParams(String(query))) url.searchParams.set(key, value);
     }
+    if (isAndre && table === "feedback_brokers") url.searchParams.set("id", "eq.andre");
     const headers = {
       apikey: anonKey,
       Authorization: `Bearer ${anonKey}`,
@@ -66,9 +81,39 @@ app.post("/api/feedback-data", requireAuthorized, async (req, res) => {
   }
 });
 
+async function getBrokerProfile(id) {
+  const url = new URL("https://ctfmuvtvjvlzjiapyrdh.supabase.co/rest/v1/feedback_brokers");
+  url.searchParams.set("id", `eq.${id}`);
+  url.searchParams.set("ativo", "eq.true");
+  url.searchParams.set("select", "id,nome,telefone,email,creci,endereco_escritorio,foto_data");
+  const response = await fetch(url, { headers: { apikey: DATA_API_KEY, Authorization: `Bearer ${DATA_API_KEY}` } });
+  if (!response.ok) throw new Error("Não foi possível validar o cadastro do corretor.");
+  const rows = await response.json();
+  return rows[0] || null;
+}
+
 app.post("/api/pdf", requireAuthorized, async (req, res) => {
   const data = req.body;
   if (!data || typeof data !== "object") return res.status(400).json({ error: "Dados inválidos." });
+  const isAndre = String(req.authUser?.email || "").trim().toLowerCase() === ANDRE_EMAIL;
+  const requestedBrokerId = String(data.brokerId || "");
+  if (isAndre && requestedBrokerId !== "andre") return res.status(403).json({ error: "A conta André só pode emitir feedback em seu próprio nome." });
+  if (!isAndre && !["erica", "andre"].includes(requestedBrokerId)) return res.status(400).json({ error: "Corretor inválido para este relatório." });
+  try {
+    const broker = await getBrokerProfile(requestedBrokerId);
+    if (!broker) return res.status(400).json({ error: "O cadastro do corretor selecionado não foi encontrado." });
+    Object.assign(data, {
+      brokerId: broker.id,
+      brokerName: broker.nome || "",
+      brokerPhone: broker.telefone || "",
+      brokerEmail: broker.email || "",
+      creci: broker.creci || "",
+      office: broker.endereco_escritorio || "",
+      brokerPhoto: broker.foto_data || ""
+    });
+  } catch (error) {
+    return res.status(503).json({ error: error.message || "Não foi possível validar o corretor." });
+  }
   let browser;
   try {
     browser = await puppeteer.launch({ args: chromium.args, defaultViewport: chromium.defaultViewport, executablePath: await chromium.executablePath(), headless: true });
