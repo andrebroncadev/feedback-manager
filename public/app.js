@@ -207,7 +207,7 @@ async function saveBrokerProfile(){
   await loadBrokers(); brokerId=id; localStorage.setItem("feedbackActiveBroker",brokerId); await applyBroker(currentBroker()); await loadProperties(); $("brokerFormPanel").classList.add("hidden"); renderBrokerList(); status.textContent="Corretor salvo ✓";
 }
 async function deleteBroker(id){if(!confirm("Excluir este corretor? Os imóveis vinculados deixarão de aparecer para ele."))return;status.textContent="Excluindo corretor...";await sb("feedback_brokers",{method:"PATCH",query:`id=eq.${encodeURIComponent(id)}`,body:{ativo:false}});await loadBrokers();if(!brokers.some(b=>b.id===brokerId))brokerId=brokers[0]?.id||"";localStorage.setItem("feedbackActiveBroker",brokerId);if(brokerId){await applyBroker(currentBroker());await loadProperties()}renderBrokerList();status.textContent="Corretor excluído ✓"}
-async function applyBroker(b){if(!b)return;$("brokerName").value=b.nome||"";$("brokerPhone").value=b.telefone||"";$("brokerEmail").value=b.email||"";$("creci").value=b.creci||"";$("office").value=b.endereco_escritorio||"";brokerPhotoData=b.foto_data||"";$("profileStatus").textContent=`Perfil: ${b.nome}`;$("pageDescription").textContent=`Página de ${b.nome} · imóveis vinculados a este corretor`}
+async function applyBroker(b){if(!b)return;$("brokerName").value=b.nome||"";$("brokerPhone").value=b.telefone||"";$("brokerEmail").value=b.email||"";$("creci").value=b.creci||"";$("office").value=b.endereco_escritorio||"";brokerPhotoData=b.foto_data||"";$("profileStatus").textContent=`Perfil: ${b.nome}`;$("pageDescription").textContent=`Relatório emitido em nome de ${b.nome} · carteira compartilhada da Érica`}
 
 function renderPropertyManager(){
   const box=$("propertyManager");if(!box)return;$("propertyPageBroker").textContent=currentBroker()?.nome||"corretor";
@@ -220,7 +220,7 @@ function renderPropertyManager(){
 }
 function openPropertyForm(id=null){
   editingPropertyId=id;const p=id?properties.find(x=>String(x.id)===String(id)):null;const panel=$("propertyFormPanel");panel.classList.remove("hidden");
-  panel.innerHTML=`<div class="panel-head"><div><h2>${p?"Editar imóvel":"Adicionar imóvel"}</h2><span class="hint">O imóvel ficará vinculado ao corretor selecionado.</span></div><button type="button" class="secondary-button" id="closePropertyForm">Fechar</button></div><div class="fields property-crud-fields"><label>Corretor responsável<select id="propertyBroker">${brokers.map(b=>`<option value="${esc(b.id)}" ${b.id===(p?.broker_id||brokerId)?"selected":""}>${esc(b.nome)}</option>`).join("")}</select></label><label>Proprietário / destinatário<input id="propertyOwner" maxlength="120" value="${esc(p?.proprietario_nome||"")}" placeholder="Nome do proprietário"></label><label>Endereço do imóvel<input id="propertyAddress" maxlength="220" value="${esc(p?.endereco||"")}" placeholder="Endereço completo do imóvel"></label><label>Código RE/MAX<input id="propertyCode" maxlength="40" value="${esc(p?.codigo_remax||"")}" placeholder="Código do anúncio"></label><label class="span-2 upload">Foto do imóvel<input id="propertyPhoto" type="file" accept="image/*"><span id="propertyPhotoName">${p?.foto_data?"Foto salva ✓":"Nenhuma foto"}</span></label></div><div class="panel-footer"><span class="save-note">Este cadastro é compartilhado entre os usuários do sistema.</span><button type="button" class="primary-button" id="saveProperty">Salvar imóvel</button></div>`;
+  panel.innerHTML=`<div class="panel-head"><div><h2>${p?"Editar imóvel":"Adicionar imóvel"}</h2><span class="hint">O imóvel ficará na carteira compartilhada da Érica.</span></div><button type="button" class="secondary-button" id="closePropertyForm">Fechar</button></div><div class="fields property-crud-fields"><label>Proprietário / destinatário<input id="propertyOwner" maxlength="120" value="${esc(p?.proprietario_nome||"")}" placeholder="Nome do proprietário"></label><label>Endereço do imóvel<input id="propertyAddress" maxlength="220" value="${esc(p?.endereco||"")}" placeholder="Endereço completo do imóvel"></label><label>Código RE/MAX<input id="propertyCode" maxlength="40" value="${esc(p?.codigo_remax||"")}" placeholder="Código do anúncio"></label><label class="span-2 upload">Foto do imóvel<input id="propertyPhoto" type="file" accept="image/*"><span id="propertyPhotoName">${p?.foto_data?"Foto salva ✓":"Nenhuma foto"}</span></label></div><div class="panel-footer"><span class="save-note">Este cadastro é compartilhado entre os usuários do sistema.</span><button type="button" class="primary-button" id="saveProperty">Salvar imóvel</button></div>`;
   propertyPhotoData=p?.foto_data||"";$("closePropertyForm").onclick=()=>panel.classList.add("hidden");$("propertyPhoto").onchange=async event=>{const file=event.target.files?.[0];if(!file)return;propertyPhotoData=await fileToDataURL(file,2400,.9);$("propertyPhotoName").textContent=`${file.name} — preparada`};$("saveProperty").onclick=saveProperty;
 }
 async function saveProperty(){
@@ -261,6 +261,7 @@ $("saveBroker").addEventListener("click",saveBrokerProfile);$("closeBrokerForm")
       all('.nav-links [data-page="properties"], #menuPanel [data-page="properties"]').forEach(button => button.hidden = true);
       const addBroker = $("addBrokerButton");
       if (addBroker) addBroker.hidden = true;
+      $("feedbackForm").hidden = true;
     }
     await loadBrokers();
     await applyBroker(currentBroker());
@@ -268,7 +269,9 @@ $("saveBroker").addEventListener("click",saveBrokerProfile);$("closeBrokerForm")
     await loadProperties();
     updateLiveTotals();
     setupNavigation();
-    status.textContent = `${brokers.length} corretor(es) e ${properties.length} imóvel(is) carregados ✓`;
+    status.textContent = isAndreUser()
+      ? "Acesso de André: nenhum imóvel vinculado. A carteira e a emissão dos feedbacks são administradas pela conta Érica."
+      : `${brokers.length} corretor(es) e ${properties.length} imóvel(is) carregados ✓`;
   } catch (error) {
     console.error("Falha ao carregar a base do Feedback Maker:", error);
     status.textContent = "Erro ao carregar base";
