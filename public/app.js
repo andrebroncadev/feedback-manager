@@ -94,13 +94,8 @@ async function loadBrokers() {
     : "select=*&ativo=eq.true&order=nome.asc";
   brokers = await sb("feedback_brokers", { query });
   if (!brokers.length) throw new Error("O cadastro do corretor vinculado a este acesso não foi encontrado.");
-  if (isAndreUser()) {
-    brokerId = "andre";
-  } else {
-    const saved = localStorage.getItem("feedbackActiveBroker");
-    brokerId = saved && brokers.some(b => b.id === saved) ? saved : "erica";
-    if (!brokers.some(b => b.id === brokerId)) brokerId = brokers[0].id;
-  }
+  brokerId = isAndreUser() ? "andre" : "erica";
+  if (!brokers.some(b => b.id === brokerId)) brokerId = brokers[0].id;
   localStorage.setItem("feedbackActiveBroker", brokerId);
 }
 
