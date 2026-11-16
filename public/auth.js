@@ -1,7 +1,7 @@
 (() => {
   "use strict";
-  const SUPABASE_URL = "https://vqenzubwfzwwndgjucim.supabase.co";
-  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_s4o-wW-rdUbEesSKe6NhNg_u7gzYeCf";
+  const SUPABASE_URL = "https://ctfmuvtvjvlzjiapyrdh.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_EpiB8s1RrbMW9_75MkF01w_7AdDhMhT";
   const AUTHORIZED_EMAILS = new Set(["andrebronca60@gmail.com", "ericabronca@gmail.com"]);
   const client = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
