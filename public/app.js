@@ -112,6 +112,13 @@ function renderProperties(selectedId = null) {
   updateOwnerFields();
 }
 function updateOwnerFields() { address.value = currentProperty()?.endereco || ""; updateLiveTotals(); }
+function clearOwnerTextFields() {
+  ["message1","message2","message3"].forEach(id => { const field=$(id); if(field) field.value=""; });
+  all(".char-counter").forEach(counter => {
+    const input=$(counter.dataset.for);
+    if(input) counter.textContent=`${input.value.length}/${input.maxLength}`;
+  });
+}
 
 function applyPierreDraft(presetActions = true) {
   const property = currentProperty();
@@ -245,7 +252,7 @@ function setupNavigation(){const menuButton=$("menuButton"),menuPanel=$("menuPan
 function setupCounters(){all(".char-counter").forEach(counter=>{const input=$(counter.dataset.for);if(!input)return;const update=()=>{counter.textContent=`${input.value.length}/${input.maxLength}`;counter.classList.toggle("near-limit",input.value.length>=input.maxLength*0.85)};input.addEventListener("input",update);update()})} setupCounters();
 $("addAction").addEventListener("click",event=>{event.preventDefault();const value=$("customAction").value.trim();if(value&&!actionOptions.includes(value))actionOptions.push(value);$("customAction").value="";renderActions();setupCounters()});
 $("statsPhoto").addEventListener("change",async event=>{const file=event.target.files?.[0];if(!file)return;statsPhotoData=await fileToDataURL(file,3000,.9);$("statsName").textContent=`${file.name} — preparada`;const preview=$("statsPhotoPreview");if(preview){preview.src=statsPhotoData;preview.classList.remove("hidden")}});
-ownerSelect.addEventListener("change",()=>{updateOwnerFields();renderActions();applyPierreDraft(false)});$("views").addEventListener("input",updateLiveTotals);$("virtualVisits").addEventListener("input",updateLiveTotals);
+ownerSelect.addEventListener("change",()=>{updateOwnerFields();renderActions();applyPierreDraft(false);clearOwnerTextFields()});$("views").addEventListener("input",updateLiveTotals);$("virtualVisits").addEventListener("input",updateLiveTotals);
 $("brokerPhoto").addEventListener("change",async event=>{const file=event.target.files?.[0];if(!file)return;brokerPhotoData=await fileToDataURL(file,1600,.9);$("brokerPhotoName").textContent=`${file.name} — preparada`});
 $("saveBroker").addEventListener("click",saveBrokerProfile);$("closeBrokerForm").addEventListener("click",()=>$("brokerFormPanel").classList.add("hidden"));$("addBrokerButton").addEventListener("click",()=>openBrokerForm());$("brokerListButton").addEventListener("click",()=>{$("brokerFormPanel").classList.add("hidden");renderBrokerList()});$("previewButton").addEventListener("click",openPreview);$("downloadButton").addEventListener("click",()=>generatePDF({preventDefault(){}}));
 
